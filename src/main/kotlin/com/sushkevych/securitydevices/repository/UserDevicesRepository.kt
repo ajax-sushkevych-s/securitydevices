@@ -5,6 +5,4 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-@Suppress("EmptyClassBlock")
-interface UserDevicesRepository : JpaRepository<UserDevices, Long> {
-}
+interface UserDevicesRepository : JpaRepository<UserDevices, Long>
