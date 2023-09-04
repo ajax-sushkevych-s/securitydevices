@@ -18,7 +18,7 @@ class UserDevices(
     @ManyToOne
     @JoinColumn(name = "device_id")
     var device: Device? = null,
-    @Column(name = "role") // TODO Owner or Viewer
+    @Column(name = "role")
     var role: String = "",
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
