@@ -21,5 +21,3 @@ class Device (
     @GeneratedValue(strategy = GenerationType.AUTO)
     var id: Long? = null
 )
-
-
