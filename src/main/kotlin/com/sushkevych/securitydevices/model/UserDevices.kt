@@ -12,6 +12,9 @@ import jakarta.persistence.GenerationType
 @Entity
 @Table(name = "user_devices")
 class UserDevices(
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    var id: Long? = null,
     @ManyToOne
     @JoinColumn(name = "user_id")
     var user: User? = null,
@@ -19,8 +22,5 @@ class UserDevices(
     @JoinColumn(name = "device_id")
     var device: Device? = null,
     @Column(name = "role")
-    var role: String = "",
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    var id: Long? = null
+    var role: String = ""
 )

@@ -11,6 +11,9 @@ import jakarta.persistence.GenerationType
 @Entity
 @Table(name = "device_attribute")
 class DeviceAttribute(
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    var id: Long? = null,
     @ManyToOne
     @JoinColumn(name = "user_id")
     var user: User? = null,
@@ -19,8 +22,5 @@ class DeviceAttribute(
     var device: Device? = null,
     @ManyToOne
     @JoinColumn(name = "attribute_id")
-    var attribute: DeviceAttributeValue? = null,
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    var id: Long? = null
+    var attribute: DeviceAttributeValue? = null
 )

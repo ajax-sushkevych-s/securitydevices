@@ -10,6 +10,10 @@ import jakarta.persistence.GenerationType
 @Entity
 @Table(name = "users")
 class User(
+    @Id
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    var id: Long? = null,
     @Column(name = "username")
     var username: String = "",
     @Column(name = "email")
@@ -17,9 +21,5 @@ class User(
     @Column(name = "mobile_number")
     var mobileNumber:String = "",
     @Column(name = "password")
-    var password: String = "",
-    @Id
-    @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    var id: Long? = null
+    var password: String = ""
 )

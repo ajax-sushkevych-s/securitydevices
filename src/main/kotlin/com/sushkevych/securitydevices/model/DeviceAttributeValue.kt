@@ -10,11 +10,11 @@ import jakarta.persistence.GenerationType
 @Entity
 @Table(name = "device_attribute_value")
 class DeviceAttributeValue(
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    var id: Long? = null,
     @Column(name = "attribute_name")
     var attributeName: String = "",
     @Column(name = "attribute_value")
-    var attributeValue: String = "",
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    var id: Long? = null
+    var attributeValue: String = ""
 )

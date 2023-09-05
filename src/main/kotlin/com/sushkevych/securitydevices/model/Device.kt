@@ -10,14 +10,14 @@ import jakarta.persistence.GenerationType
 @Entity
 @Table(name = "devices")
 class Device (
+    @Id
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    var id: Long? = null,
     @Column(name = "name")
     var name: String = "",
     @Column(name = "description")
     var description: String = "",
     @Column(name = "type")
-    var type: String = "",
-    @Id
-    @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    var id: Long? = null
+    var type: String = ""
 )
