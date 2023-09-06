@@ -19,7 +19,7 @@ class User(
     @Column(name = "email")
     var email: String = "",
     @Column(name = "mobile_number")
-    var mobileNumber:String = "",
+    var mobileNumber: String = "",
     @Column(name = "password")
     var password: String = ""
 )

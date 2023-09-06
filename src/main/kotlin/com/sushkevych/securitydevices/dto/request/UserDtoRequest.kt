@@ -3,6 +3,7 @@ package com.sushkevych.securitydevices.dto.request
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.sushkevych.securitydevices.model.User
 import jakarta.validation.constraints.NotEmpty
+
 data class UserDtoRequest(
     val id: Long?,
     @field:NotEmpty(message = "Username cannot be empty.")

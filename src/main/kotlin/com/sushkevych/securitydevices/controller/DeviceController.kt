@@ -20,21 +20,23 @@ import org.springframework.web.bind.annotation.PutMapping
 @RequestMapping("/api/devices")
 class DeviceController(private val deviceService: DeviceService) {
     @GetMapping("/{deviceId}")
-    fun getDeviceById(@PathVariable deviceId: Long) : Device = deviceService.getDeviceById(deviceId)
+    fun getDeviceById(@PathVariable deviceId: Long): Device = deviceService.getDeviceById(deviceId)
 
     @GetMapping
     fun getAllDevices(): List<DeviceDtoResponse> = deviceService.getAllDevices()
 
     @PostMapping
-    fun createDevice(@Valid @RequestBody device: DeviceDtoRequest) : ResponseEntity<DeviceDtoResponse> =
+    fun createDevice(@Valid @RequestBody device: DeviceDtoRequest): ResponseEntity<DeviceDtoResponse> =
         ResponseEntity(
             deviceService.saveDevice(device),
             HttpStatus.OK
         )
 
     @PutMapping("/{deviceId}")
-    fun updateDevice(@PathVariable deviceId: Long,
-                     @Valid @RequestBody device: DeviceDtoRequest): ResponseEntity<DeviceDtoResponse> =
+    fun updateDevice(
+        @PathVariable deviceId: Long,
+        @Valid @RequestBody device: DeviceDtoRequest
+    ): ResponseEntity<DeviceDtoResponse> =
         ResponseEntity(
             deviceService.updateDevice(deviceId, device),
             HttpStatus.OK

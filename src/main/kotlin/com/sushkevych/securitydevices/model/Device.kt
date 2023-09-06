@@ -9,7 +9,7 @@ import jakarta.persistence.GenerationType
 
 @Entity
 @Table(name = "devices")
-class Device (
+class Device(
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.AUTO)

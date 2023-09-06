@@ -18,23 +18,25 @@ import org.springframework.web.bind.annotation.PutMapping
 
 @RestController
 @RequestMapping("/api/users")
-class UserController (private val userService: UserService) {
+class UserController(private val userService: UserService) {
     @GetMapping("/{userId}")
-    fun getUserById(@PathVariable userId: Long) : User = userService.getUserById(userId)
+    fun getUserById(@PathVariable userId: Long): User = userService.getUserById(userId)
 
     @GetMapping
     fun getAllUsers(): List<UserDtoResponse> = userService.getAllUsers()
 
     @PostMapping
-    fun createUser(@Valid @RequestBody user: UserDtoRequest) : ResponseEntity<UserDtoResponse> =
+    fun createUser(@Valid @RequestBody user: UserDtoRequest): ResponseEntity<UserDtoResponse> =
         ResponseEntity(
             userService.saveUser(user),
             HttpStatus.OK
         )
 
     @PutMapping("/{userId}")
-    fun updateUser(@PathVariable userId: Long,
-                   @Valid @RequestBody user: UserDtoRequest) : ResponseEntity<UserDtoResponse> =
+    fun updateUser(
+        @PathVariable userId: Long,
+        @Valid @RequestBody user: UserDtoRequest
+    ): ResponseEntity<UserDtoResponse> =
         ResponseEntity(
             userService.updateDevice(userId, user),
             HttpStatus.OK

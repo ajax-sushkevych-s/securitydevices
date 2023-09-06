@@ -2,6 +2,7 @@ package com.sushkevych.securitydevices.dto.request
 
 import com.sushkevych.securitydevices.model.Device
 import jakarta.validation.constraints.NotEmpty
+
 data class DeviceDtoRequest(
     val id: Long?,
     @field:NotEmpty(message = "Name cannot be empty.")

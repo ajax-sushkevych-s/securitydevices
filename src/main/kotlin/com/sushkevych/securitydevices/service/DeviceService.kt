@@ -17,11 +17,13 @@ class DeviceService(private val deviceRepository: DeviceRepository) {
         deviceRepository.save(device)
         return device.toResponse()
     }
+
     fun updateDevice(id: Long, deviceDtoRequest: DeviceDtoRequest): DeviceDtoResponse {
         val device = deviceDtoRequest.toEntity()
         device.id = deviceRepository.getReferenceById(id).id
         deviceRepository.save(device)
         return device.toResponse()
     }
+
     fun deleteDevice(deviceId: Long) = deviceRepository.deleteById(deviceId)
 }
