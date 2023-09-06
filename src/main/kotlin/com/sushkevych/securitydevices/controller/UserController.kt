@@ -33,7 +33,8 @@ class UserController (private val userService: UserService) {
         )
 
     @PutMapping("/{userId}")
-    fun updateUser(@PathVariable userId: Long, @Valid @RequestBody user: UserDtoRequest) : ResponseEntity<UserDtoResponse> =
+    fun updateUser(@PathVariable userId: Long,
+                   @Valid @RequestBody user: UserDtoRequest) : ResponseEntity<UserDtoResponse> =
         ResponseEntity(
             userService.updateDevice(userId, user),
             HttpStatus.OK

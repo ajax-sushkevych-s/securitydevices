@@ -33,7 +33,8 @@ class DeviceController(private val deviceService: DeviceService) {
         )
 
     @PutMapping("/{deviceId}")
-    fun updateDevice(@PathVariable deviceId: Long, @Valid @RequestBody device: DeviceDtoRequest) : ResponseEntity<DeviceDtoResponse> =
+    fun updateDevice(@PathVariable deviceId: Long,
+                     @Valid @RequestBody device: DeviceDtoRequest): ResponseEntity<DeviceDtoResponse> =
         ResponseEntity(
             deviceService.updateDevice(deviceId, device),
             HttpStatus.OK

@@ -24,7 +24,7 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(EntityNotFoundException::class)
-    fun handleEntityNotFoundException(ex: EntityNotFoundException): ResponseEntity<ErrorResponse> {
+    fun handleEntityNotFoundException(): ResponseEntity<ErrorResponse> {
         val errorResponse = ErrorResponse(
             LocalDateTime.now(),
             HttpStatus.NOT_FOUND.value(),
