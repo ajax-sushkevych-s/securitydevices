@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service
 @Service
 class DeviceService(private val deviceRepository: DeviceRepository) {
     fun getDeviceById(deviceId: Long): Device = deviceRepository.getReferenceById(deviceId)
+
     fun getAllDevices(): List<DeviceDtoResponse> = deviceRepository.findAll().map { it.toResponse() }
+
     fun saveDevice(deviceDtoRequest: DeviceDtoRequest): DeviceDtoResponse {
         val device = deviceDtoRequest.toEntity()
         deviceRepository.save(device)

@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service
 @Service
 class UserService(private val userRepository: UserRepository) {
     fun getUserById(userId: Long): User = userRepository.getReferenceById(userId)
+
     fun getAllUsers(): List<UserDtoResponse> = userRepository.findAll().map { it.toResponse() }
+
     fun saveUser(userDtoRequest: UserDtoRequest): UserDtoResponse {
         val user = userDtoRequest.toEntity()
         userRepository.save(user)
