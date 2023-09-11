@@ -38,7 +38,7 @@ class UserController(private val userService: UserService) {
         @Valid @RequestBody user: UserDtoRequest
     ): ResponseEntity<UserDtoResponse> =
         ResponseEntity(
-            userService.updateDevice(userId, user),
+            userService.updateUser(userId, user),
             HttpStatus.OK
         )
 

@@ -18,9 +18,9 @@ class UserService(private val userRepository: UserRepository) {
         return user.toResponse()
     }
 
-    fun updateDevice(id: Long, userDtoRequest: UserDtoRequest): UserDtoResponse {
+    fun updateUser(userId: Long, userDtoRequest: UserDtoRequest): UserDtoResponse {
         val user = userDtoRequest.toEntity()
-        user.id = userRepository.getReferenceById(id).id
+        user.id = userRepository.getReferenceById(userId).id
         userRepository.save(user)
         return user.toResponse()
     }

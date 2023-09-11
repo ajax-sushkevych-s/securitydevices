@@ -18,9 +18,9 @@ class DeviceService(private val deviceRepository: DeviceRepository) {
         return device.toResponse()
     }
 
-    fun updateDevice(id: Long, deviceDtoRequest: DeviceDtoRequest): DeviceDtoResponse {
+    fun updateDevice(deviceId: Long, deviceDtoRequest: DeviceDtoRequest): DeviceDtoResponse {
         val device = deviceDtoRequest.toEntity()
-        device.id = deviceRepository.getReferenceById(id).id
+        device.id = deviceRepository.getReferenceById(deviceId).id
         deviceRepository.save(device)
         return device.toResponse()
     }
