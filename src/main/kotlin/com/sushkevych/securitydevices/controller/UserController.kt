@@ -2,25 +2,17 @@ package com.sushkevych.securitydevices.controller
 
 import com.sushkevych.securitydevices.dto.request.UserDtoRequest
 import com.sushkevych.securitydevices.dto.response.UserDtoResponse
-import com.sushkevych.securitydevices.model.User
 import com.sushkevych.securitydevices.service.UserService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/users")
 class UserController(private val userService: UserService) {
     @GetMapping("/{userId}")
-    fun getUserById(@PathVariable userId: Long): User = userService.getUserById(userId)
+    fun getUserById(@PathVariable userId: String): UserDtoResponse = userService.getUserById(userId)
 
     @GetMapping
     fun getAllUsers(): List<UserDtoResponse> = userService.getAllUsers()
@@ -34,7 +26,7 @@ class UserController(private val userService: UserService) {
 
     @PutMapping("/{userId}")
     fun updateUser(
-        @PathVariable userId: Long,
+        @PathVariable userId: String,
         @Valid @RequestBody user: UserDtoRequest
     ): ResponseEntity<UserDtoResponse> =
         ResponseEntity(
@@ -43,5 +35,16 @@ class UserController(private val userService: UserService) {
         )
 
     @DeleteMapping("/{userId}")
-    fun deleteUser(@PathVariable userId: Long) = userService.deleteUser(userId)
+    fun deleteUser(@PathVariable userId: String) = userService.deleteUser(userId)
+
+    @GetMapping("/no-devices")
+    fun findUsersWithoutDevices(): List<UserDtoResponse> = userService.findUsersWithoutDevices()
+
+    @GetMapping(params = ["deviceId"])
+    fun findUsersWithSpecificDevice(@RequestParam("deviceId") deviceId: String): List<UserDtoResponse> =
+        userService.findsUsersWithSpecificDevice(deviceId)
+
+    @GetMapping(params = ["role"])
+    fun findUsersWithSpecificRole(@RequestParam("role") role: String): List<UserDtoResponse> =
+        userService.findUsersWithSpecificRole(role)
 }

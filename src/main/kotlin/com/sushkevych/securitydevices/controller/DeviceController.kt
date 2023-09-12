@@ -1,8 +1,8 @@
 package com.sushkevych.securitydevices.controller
 
+
 import com.sushkevych.securitydevices.dto.request.DeviceDtoRequest
 import com.sushkevych.securitydevices.dto.response.DeviceDtoResponse
-import com.sushkevych.securitydevices.model.Device
 import com.sushkevych.securitydevices.service.DeviceService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.PutMapping
 @RequestMapping("/api/devices")
 class DeviceController(private val deviceService: DeviceService) {
     @GetMapping("/{deviceId}")
-    fun getDeviceById(@PathVariable deviceId: Long): Device = deviceService.getDeviceById(deviceId)
+    fun getDeviceById(@PathVariable deviceId: String): DeviceDtoResponse = deviceService.getDeviceById(deviceId)
 
     @GetMapping
     fun getAllDevices(): List<DeviceDtoResponse> = deviceService.getAllDevices()
@@ -34,7 +34,7 @@ class DeviceController(private val deviceService: DeviceService) {
 
     @PutMapping("/{deviceId}")
     fun updateDevice(
-        @PathVariable deviceId: Long,
+        @PathVariable deviceId: String,
         @Valid @RequestBody device: DeviceDtoRequest
     ): ResponseEntity<DeviceDtoResponse> =
         ResponseEntity(
@@ -43,5 +43,5 @@ class DeviceController(private val deviceService: DeviceService) {
         )
 
     @DeleteMapping("/{deviceId}")
-    fun deleteDevice(@PathVariable deviceId: Long) = deviceService.deleteDevice(deviceId)
+    fun deleteDevice(@PathVariable deviceId: String) = deviceService.deleteDevice(deviceId)
 }
