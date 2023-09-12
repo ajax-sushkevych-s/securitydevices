@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Repository
 
 @Repository
-class UserCustomQueryRepositoryCustom(private val mongoTemplate: MongoTemplate) : UserRepositoryCustom {
+class UserQueryRepository(private val mongoTemplate: MongoTemplate) : UserRepository {
     override fun getUserById(id: ObjectId): MongoUser? {
         val query = Query().addCriteria(Criteria.where("id").`is`(id))
         return mongoTemplate.findOne(query, MongoUser::class.java, MongoUser.COLLECTION_NAME)

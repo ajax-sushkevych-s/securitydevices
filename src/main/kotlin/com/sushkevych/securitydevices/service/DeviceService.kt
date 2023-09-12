@@ -1,8 +1,8 @@
 package com.sushkevych.securitydevices.service
 
-import com.sushkevych.securitydevices.dto.request.DeviceDtoRequest
+import com.sushkevych.securitydevices.dto.request.DeviceRequest
 import com.sushkevych.securitydevices.dto.request.toEntity
-import com.sushkevych.securitydevices.dto.response.DeviceDtoResponse
+import com.sushkevych.securitydevices.dto.response.DeviceResponse
 import com.sushkevych.securitydevices.dto.response.toResponse
 import com.sushkevych.securitydevices.exception.NotFoundException
 import com.sushkevych.securitydevices.repository.DeviceRepository
@@ -11,21 +11,21 @@ import org.springframework.stereotype.Service
 
 @Service
 class DeviceService(private val deviceRepository: DeviceRepository) {
-    fun getDeviceById(deviceId: String): DeviceDtoResponse = deviceRepository.getDeviceById(ObjectId(deviceId))
+    fun getDeviceById(deviceId: String): DeviceResponse = deviceRepository.getDeviceById(ObjectId(deviceId))
         ?.toResponse()
         ?: throw NotFoundException(message = "Device with ID $deviceId not found")
 
-    fun getAllDevices(): List<DeviceDtoResponse> = deviceRepository.findAll().map { it.toResponse() }
+    fun getAllDevices(): List<DeviceResponse> = deviceRepository.findAll().map { it.toResponse() }
 
-    fun saveDevice(deviceDtoRequest: DeviceDtoRequest): DeviceDtoResponse {
-        val device = deviceDtoRequest.toEntity()
+    fun saveDevice(deviceRequest: DeviceRequest): DeviceResponse {
+        val device = deviceRequest.toEntity()
         deviceRepository.save(device)
         return device.toResponse()
     }
 
-    fun updateDevice(deviceId: String, deviceDtoRequest: DeviceDtoRequest): DeviceDtoResponse {
+    fun updateDevice(deviceId: String, deviceRequest: DeviceRequest): DeviceResponse {
         val existingDevice = getDeviceById(deviceId)
-        val updatedDevice = deviceDtoRequest.toEntity().copy(id = ObjectId(existingDevice.id))
+        val updatedDevice = deviceRequest.toEntity().copy(id = ObjectId(existingDevice.id))
         deviceRepository.save(updatedDevice)
         return updatedDevice.toResponse()
     }

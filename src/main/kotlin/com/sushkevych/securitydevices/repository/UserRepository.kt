@@ -3,7 +3,7 @@ package com.sushkevych.securitydevices.repository
 import com.sushkevych.securitydevices.model.MongoUser
 import org.bson.types.ObjectId
 
-interface UserRepositoryCustom {
+interface UserRepository {
     fun getUserById(id: ObjectId): MongoUser?
 
     fun findAll(): List<MongoUser>

@@ -3,7 +3,7 @@ package com.sushkevych.securitydevices.dto.response
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.sushkevych.securitydevices.model.MongoUser
 
-data class UserDtoResponse(
+data class UserResponse(
     val id: String?,
     val username: String?,
     val email: String?,
@@ -12,7 +12,7 @@ data class UserDtoResponse(
     val devices: List<MongoUser.MongoUserDevice>?
 )
 
-fun MongoUser.toResponse() = UserDtoResponse(
+fun MongoUser.toResponse() = UserResponse(
     id = id?.toHexString(),
     username = username,
     email = email,

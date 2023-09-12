@@ -4,7 +4,7 @@ import com.sushkevych.securitydevices.model.MongoDevice
 import jakarta.validation.constraints.NotEmpty
 import org.bson.types.ObjectId
 
-data class DeviceDtoRequest(
+data class DeviceRequest(
     val id: String?,
     @field:NotEmpty(message = "Name cannot be empty.")
     val name: String,
@@ -15,7 +15,7 @@ data class DeviceDtoRequest(
     val attributes: List<MongoDevice.MongoDeviceAttribute>
 )
 
-fun DeviceDtoRequest.toEntity() = MongoDevice(
+fun DeviceRequest.toEntity() = MongoDevice(
     id = id?.let { ObjectId(id) },
     name = name,
     description = description,

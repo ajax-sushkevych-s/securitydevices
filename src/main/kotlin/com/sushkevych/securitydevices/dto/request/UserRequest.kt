@@ -5,7 +5,7 @@ import com.sushkevych.securitydevices.model.MongoUser
 import jakarta.validation.constraints.NotEmpty
 import org.bson.types.ObjectId
 
-data class UserDtoRequest(
+data class UserRequest(
     val id: String?,
     @field:NotEmpty(message = "Username cannot be empty.")
     val username: String,
@@ -18,7 +18,7 @@ data class UserDtoRequest(
     val devices: List<MongoUser.MongoUserDevice>
 )
 
-fun UserDtoRequest.toEntity() = MongoUser(
+fun UserRequest.toEntity() = MongoUser(
     id = id?.let { ObjectId(id) },
     username = username,
     email = email,

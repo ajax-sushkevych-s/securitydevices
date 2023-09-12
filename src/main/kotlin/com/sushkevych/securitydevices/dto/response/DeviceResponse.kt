@@ -1,9 +1,8 @@
 package com.sushkevych.securitydevices.dto.response
 
 import com.sushkevych.securitydevices.model.MongoDevice
-import jakarta.validation.constraints.NotEmpty
 
-data class DeviceDtoResponse(
+data class DeviceResponse(
     val id: String?,
     val name: String?,
     val description: String?,
@@ -11,7 +10,7 @@ data class DeviceDtoResponse(
     val attributes: List<MongoDevice.MongoDeviceAttribute>?
 )
 
-fun MongoDevice.toResponse() = DeviceDtoResponse(
+fun MongoDevice.toResponse() = DeviceResponse(
     id = id?.toHexString(),
     name = name,
     description = description,
