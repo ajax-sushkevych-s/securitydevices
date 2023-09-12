@@ -1,8 +1,11 @@
 package com.sushkevych.securitydevices.repository
 
-import com.sushkevych.securitydevices.model.Device
-import org.springframework.data.jpa.repository.JpaRepository
+import com.sushkevych.securitydevices.model.MongoDevice
+import org.bson.types.ObjectId
+import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface DeviceRepository : JpaRepository<Device, Long>
+interface DeviceRepository : MongoRepository<MongoDevice, ObjectId> {
+    fun getDeviceById(deviceId: ObjectId): MongoDevice?
+}
