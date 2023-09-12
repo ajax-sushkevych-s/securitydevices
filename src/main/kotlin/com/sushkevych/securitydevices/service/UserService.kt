@@ -1,31 +1,45 @@
 package com.sushkevych.securitydevices.service
 
-import com.sushkevych.securitydevices.dto.request.UserDtoRequest
+import com.sushkevych.securitydevices.dto.request.UserRequest
 import com.sushkevych.securitydevices.dto.request.toEntity
-import com.sushkevych.securitydevices.dto.response.UserDtoResponse
+import com.sushkevych.securitydevices.dto.response.UserResponse
 import com.sushkevych.securitydevices.dto.response.toResponse
-import com.sushkevych.securitydevices.model.User
+import com.sushkevych.securitydevices.exception.NotFoundException
+import com.sushkevych.securitydevices.model.MongoUser
 import com.sushkevych.securitydevices.repository.UserRepository
+import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
 
 @Service
 class UserService(private val userRepository: UserRepository) {
-    fun getUserById(userId: Long): User = userRepository.getReferenceById(userId)
+    fun getUserById(userId: String): UserResponse = userRepository.getUserById(ObjectId(userId))
+        ?.toResponse() ?: throw NotFoundException(message = "User with ID $userId not found")
 
-    fun getAllUsers(): List<UserDtoResponse> = userRepository.findAll().map { it.toResponse() }
+    fun getAllUsers(): List<UserResponse> = userRepository.findAll().map { it.toResponse() }
 
-    fun saveUser(userDtoRequest: UserDtoRequest): UserDtoResponse {
-        val user = userDtoRequest.toEntity()
+    fun saveUser(userRequest: UserRequest): UserResponse {
+        val user = userRequest.toEntity()
         userRepository.save(user)
         return user.toResponse()
     }
 
-    fun updateUser(userId: Long, userDtoRequest: UserDtoRequest): UserDtoResponse {
-        val user = userDtoRequest.toEntity()
-        user.id = userRepository.getReferenceById(userId).id
-        userRepository.save(user)
-        return user.toResponse()
+    fun updateUser(id: String, userRequest: UserRequest): UserResponse {
+        val existingUser = getUserById(id)
+        existingUser.let {
+            val updatedUser = userRequest.toEntity().copy(id = ObjectId(it.id))
+            userRepository.save(updatedUser)
+            return updatedUser.toResponse()
+        }
     }
 
-    fun deleteUser(userId: Long) = userRepository.deleteById(userId)
+    fun deleteUser(userId: String) = userRepository.deleteById(ObjectId(userId))
+
+    fun findUsersWithoutDevices(): List<UserResponse> =
+        userRepository.findUsersWithoutDevices().map { it.toResponse() }
+
+    fun findsUsersWithSpecificDevice(deviceId: String): List<UserResponse> =
+        userRepository.findUsersWithSpecificDevice(ObjectId(deviceId)).map { it.toResponse() }
+
+    fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): List<UserResponse> =
+        userRepository.findUsersWithSpecificRole(role).map { it.toResponse() }
 }

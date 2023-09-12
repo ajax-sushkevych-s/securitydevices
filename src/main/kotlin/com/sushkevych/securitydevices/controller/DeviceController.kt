@@ -1,8 +1,7 @@
 package com.sushkevych.securitydevices.controller
 
-import com.sushkevych.securitydevices.dto.request.DeviceDtoRequest
-import com.sushkevych.securitydevices.dto.response.DeviceDtoResponse
-import com.sushkevych.securitydevices.model.Device
+import com.sushkevych.securitydevices.dto.request.DeviceRequest
+import com.sushkevych.securitydevices.dto.response.DeviceResponse
 import com.sushkevych.securitydevices.service.DeviceService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -20,13 +19,13 @@ import org.springframework.web.bind.annotation.PutMapping
 @RequestMapping("/api/devices")
 class DeviceController(private val deviceService: DeviceService) {
     @GetMapping("/{deviceId}")
-    fun getDeviceById(@PathVariable deviceId: Long): Device = deviceService.getDeviceById(deviceId)
+    fun getDeviceById(@PathVariable deviceId: String): DeviceResponse = deviceService.getDeviceById(deviceId)
 
     @GetMapping
-    fun getAllDevices(): List<DeviceDtoResponse> = deviceService.getAllDevices()
+    fun getAllDevices(): List<DeviceResponse> = deviceService.getAllDevices()
 
     @PostMapping
-    fun createDevice(@Valid @RequestBody device: DeviceDtoRequest): ResponseEntity<DeviceDtoResponse> =
+    fun createDevice(@Valid @RequestBody device: DeviceRequest): ResponseEntity<DeviceResponse> =
         ResponseEntity(
             deviceService.saveDevice(device),
             HttpStatus.OK
@@ -34,14 +33,14 @@ class DeviceController(private val deviceService: DeviceService) {
 
     @PutMapping("/{deviceId}")
     fun updateDevice(
-        @PathVariable deviceId: Long,
-        @Valid @RequestBody device: DeviceDtoRequest
-    ): ResponseEntity<DeviceDtoResponse> =
+        @PathVariable deviceId: String,
+        @Valid @RequestBody device: DeviceRequest
+    ): ResponseEntity<DeviceResponse> =
         ResponseEntity(
             deviceService.updateDevice(deviceId, device),
             HttpStatus.OK
         )
 
     @DeleteMapping("/{deviceId}")
-    fun deleteDevice(@PathVariable deviceId: Long) = deviceService.deleteDevice(deviceId)
+    fun deleteDevice(@PathVariable deviceId: String) = deviceService.deleteDevice(deviceId)
 }
