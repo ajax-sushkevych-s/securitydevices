@@ -1,4 +1,4 @@
-package com.sushkevych.securitydevices.exceptionhandling
+package com.sushkevych.securitydevices.handlers
 
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.http.HttpStatus
@@ -19,17 +19,6 @@ class GlobalExceptionHandler {
             ex.bindingResult.fieldErrors.joinToString(" ") {
                 "${it.defaultMessage}"
             }
-        )
-        return ResponseEntity.badRequest().body(errorResponse)
-    }
-
-    @ExceptionHandler(EntityNotFoundException::class)
-    fun handleEntityNotFoundException(): ResponseEntity<ErrorResponse> {
-        val errorResponse = ErrorResponse(
-            LocalDateTime.now(),
-            HttpStatus.NOT_FOUND.value(),
-            "Not Found",
-            "Not found with given ID"
         )
         return ResponseEntity.badRequest().body(errorResponse)
     }
