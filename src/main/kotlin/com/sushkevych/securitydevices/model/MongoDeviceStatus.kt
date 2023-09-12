@@ -25,4 +25,3 @@ data class MongoDeviceStatus(
         const val COLLECTION_NAME = "device_status"
     }
 }
-

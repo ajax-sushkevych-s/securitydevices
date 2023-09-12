@@ -16,7 +16,7 @@ interface UserRepository {
 
     fun findUsersWithSpecificDevice(deviceId: ObjectId): List<MongoUser>
 
-    fun findUsersWithSpecificRole(role: String): List<MongoUser>
+    fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): List<MongoUser>
 
     fun findUsersWithoutDevices(): List<MongoUser>
 }

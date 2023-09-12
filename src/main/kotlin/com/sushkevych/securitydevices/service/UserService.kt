@@ -5,6 +5,7 @@ import com.sushkevych.securitydevices.dto.request.toEntity
 import com.sushkevych.securitydevices.dto.response.UserResponse
 import com.sushkevych.securitydevices.dto.response.toResponse
 import com.sushkevych.securitydevices.exception.NotFoundException
+import com.sushkevych.securitydevices.model.MongoUser
 import com.sushkevych.securitydevices.repository.UserRepository
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
@@ -39,6 +40,6 @@ class UserService(private val userRepository: UserRepository) {
     fun findsUsersWithSpecificDevice(deviceId: String): List<UserResponse> =
         userRepository.findUsersWithSpecificDevice(ObjectId(deviceId)).map { it.toResponse() }
 
-    fun findUsersWithSpecificRole(role: String): List<UserResponse> =
+    fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): List<UserResponse> =
         userRepository.findUsersWithSpecificRole(role).map { it.toResponse() }
 }

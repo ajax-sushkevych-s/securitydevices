@@ -1,6 +1,5 @@
 package com.sushkevych.securitydevices.controller
 
-
 import com.sushkevych.securitydevices.dto.request.DeviceRequest
 import com.sushkevych.securitydevices.dto.response.DeviceResponse
 import com.sushkevych.securitydevices.service.DeviceService

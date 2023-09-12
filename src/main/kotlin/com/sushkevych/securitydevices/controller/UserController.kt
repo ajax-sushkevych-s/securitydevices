@@ -2,6 +2,7 @@ package com.sushkevych.securitydevices.controller
 
 import com.sushkevych.securitydevices.dto.request.UserRequest
 import com.sushkevych.securitydevices.dto.response.UserResponse
+import com.sushkevych.securitydevices.model.MongoUser
 import com.sushkevych.securitydevices.service.UserService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -53,6 +54,6 @@ class UserController(private val userService: UserService) {
         userService.findsUsersWithSpecificDevice(deviceId)
 
     @GetMapping(params = ["role"])
-    fun findUsersWithSpecificRole(@RequestParam("role") role: String): List<UserResponse> =
+    fun findUsersWithSpecificRole(@RequestParam("role") role: MongoUser.MongoUserRole): List<UserResponse> =
         userService.findUsersWithSpecificRole(role)
 }

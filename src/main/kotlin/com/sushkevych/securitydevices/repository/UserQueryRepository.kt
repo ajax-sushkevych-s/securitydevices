@@ -37,7 +37,7 @@ class UserQueryRepository(private val mongoTemplate: MongoTemplate) : UserReposi
         return mongoTemplate.find(query, MongoUser::class.java, MongoUser.COLLECTION_NAME)
     }
 
-    override fun findUsersWithSpecificRole(role: String): List<MongoUser> {
+    override fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): List<MongoUser> {
         val query = Query(Criteria.where("devices.role").`is`(role))
         return mongoTemplate.find(query, MongoUser::class.java, MongoUser.COLLECTION_NAME)
     }
