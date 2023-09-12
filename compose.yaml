@@ -13,16 +13,5 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=root
       - MONGO_INITDB_DATABASE=mongo-db
 
-  mongo-express:
-    image: mongo-express
-    ports:
-      - "8081:8081"
-    restart: always
-    environment:
-      - ME_CONFIG_MONGODB_SERVER=mongo-db
-      - ME_CONFIG_MONGODB_ENABLE_ADMIN="true"
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=root
-
 volumes:
   mongo-data:
