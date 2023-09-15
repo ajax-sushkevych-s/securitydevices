@@ -1,5 +1,6 @@
 package com.sushkevych.securitydevices.handlers
 
+import com.sushkevych.securitydevices.exception.NotFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -20,6 +21,17 @@ class GlobalExceptionHandler {
             }
         )
         return ResponseEntity.badRequest().body(errorResponse)
+    }
+
+    @ExceptionHandler(NotFoundException::class)
+    fun handleNotFoundException(ex: NotFoundException): ResponseEntity<ErrorResponse> {
+        val errorResponse = ErrorResponse(
+            LocalDateTime.now(),
+            HttpStatus.NOT_FOUND.value(),
+            "Not Found",
+            ex.message
+        )
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse)
     }
 }
 

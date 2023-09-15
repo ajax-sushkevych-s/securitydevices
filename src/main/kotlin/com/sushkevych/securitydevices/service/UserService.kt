@@ -1,45 +1,23 @@
 package com.sushkevych.securitydevices.service
 
 import com.sushkevych.securitydevices.dto.request.UserRequest
-import com.sushkevych.securitydevices.dto.request.toEntity
 import com.sushkevych.securitydevices.dto.response.UserResponse
-import com.sushkevych.securitydevices.dto.response.toResponse
-import com.sushkevych.securitydevices.exception.NotFoundException
 import com.sushkevych.securitydevices.model.MongoUser
-import com.sushkevych.securitydevices.repository.UserRepository
-import org.bson.types.ObjectId
-import org.springframework.stereotype.Service
 
-@Service
-class UserService(private val userRepository: UserRepository) {
-    fun getUserById(userId: String): UserResponse = userRepository.getUserById(ObjectId(userId))
-        ?.toResponse() ?: throw NotFoundException(message = "User with ID $userId not found")
+interface UserService {
+    fun getUserById(userId: String): UserResponse
 
-    fun getAllUsers(): List<UserResponse> = userRepository.findAll().map { it.toResponse() }
+    fun findAllUsers(): List<UserResponse>
 
-    fun saveUser(userRequest: UserRequest): UserResponse {
-        val user = userRequest.toEntity()
-        userRepository.save(user)
-        return user.toResponse()
-    }
+    fun saveUser(userRequest: UserRequest): UserResponse
 
-    fun updateUser(id: String, userRequest: UserRequest): UserResponse {
-        val existingUser = getUserById(id)
-        existingUser.let {
-            val updatedUser = userRequest.toEntity().copy(id = ObjectId(it.id))
-            userRepository.save(updatedUser)
-            return updatedUser.toResponse()
-        }
-    }
+    fun updateUser(id: String, userRequest: UserRequest): UserResponse
 
-    fun deleteUser(userId: String) = userRepository.deleteById(ObjectId(userId))
+    fun deleteUser(userId: String)
 
-    fun findUsersWithoutDevices(): List<UserResponse> =
-        userRepository.findUsersWithoutDevices().map { it.toResponse() }
+    fun findUsersWithoutDevices(): List<UserResponse>
 
-    fun findsUsersWithSpecificDevice(deviceId: String): List<UserResponse> =
-        userRepository.findUsersWithSpecificDevice(ObjectId(deviceId)).map { it.toResponse() }
+    fun findsUsersWithSpecificDevice(deviceId: String): List<UserResponse>
 
-    fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): List<UserResponse> =
-        userRepository.findUsersWithSpecificRole(role).map { it.toResponse() }
+    fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): List<UserResponse>
 }
