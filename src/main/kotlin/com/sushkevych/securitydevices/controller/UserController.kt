@@ -24,7 +24,7 @@ class UserController(private val userService: UserService) {
     fun getUserById(@PathVariable userId: String): UserResponse = userService.getUserById(userId)
 
     @GetMapping
-    fun getAllUsers(): List<UserResponse> = userService.getAllUsers()
+    fun getAllUsers(): List<UserResponse> = userService.findAllUsers()
 
     @PostMapping
     fun createUser(@Valid @RequestBody user: UserRequest): ResponseEntity<UserResponse> =

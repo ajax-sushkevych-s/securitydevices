@@ -17,7 +17,7 @@ class UserServiceImpl(private val userRepository: UserRepository) : UserService 
     override fun getUserById(userId: String): UserResponse = userRepository.getUserById(ObjectId(userId))
         ?.toResponse() ?: throw NotFoundException(message = "User with ID $userId not found")
 
-    override fun getAllUsers(): List<UserResponse> = userRepository.findAll().map { it.toResponse() }
+    override fun findAllUsers(): List<UserResponse> = userRepository.findAll().map { it.toResponse() }
 
     @DeviceAuthorization
     override fun saveUser(userRequest: UserRequest): UserResponse {

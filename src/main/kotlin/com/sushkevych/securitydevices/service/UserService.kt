@@ -7,7 +7,7 @@ import com.sushkevych.securitydevices.model.MongoUser
 interface UserService {
     fun getUserById(userId: String): UserResponse
 
-    fun getAllUsers(): List<UserResponse>
+    fun findAllUsers(): List<UserResponse>
 
     fun saveUser(userRequest: UserRequest): UserResponse
 
