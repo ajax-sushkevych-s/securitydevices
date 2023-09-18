@@ -15,7 +15,7 @@ data class MongoDevice(
     val name: String?,
     val description: String?,
     val type: String?,
-    val attributes: List<MongoDeviceAttribute>?
+    val attributes: List<MongoDeviceAttribute?>
 ) {
     @TypeAlias("DeviceAttribute")
     @Document

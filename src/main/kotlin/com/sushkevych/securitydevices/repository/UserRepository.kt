@@ -10,7 +10,7 @@ interface UserRepository {
 
     fun save(user: MongoUser): MongoUser?
 
-    fun deleteById(id: ObjectId)
+    fun deleteById(userId: ObjectId)
 
     fun getUserByUserName(username: String): MongoUser?
 

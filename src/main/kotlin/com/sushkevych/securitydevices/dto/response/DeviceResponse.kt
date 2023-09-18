@@ -7,7 +7,7 @@ data class DeviceResponse(
     val name: String?,
     val description: String?,
     val type: String?,
-    val attributes: List<MongoDevice.MongoDeviceAttribute>?
+    val attributes: List<MongoDevice.MongoDeviceAttribute?>
 )
 
 fun MongoDevice.toResponse() = DeviceResponse(
