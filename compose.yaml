@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  mongo-db:
+  mongo-security-devices:
     image: mongo
     ports:
       - "27017:27017"
@@ -12,6 +12,14 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=root
       - MONGO_INITDB_DATABASE=mongo-db
+
+  secutiry-app:
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo-security-devices
 
 volumes:
   mongo-data:

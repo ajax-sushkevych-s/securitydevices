@@ -1,5 +1,6 @@
 package com.sushkevych.securitydevices.dto.response
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.sushkevych.securitydevices.model.MongoDevice
 
 data class DeviceResponse(
@@ -7,7 +8,14 @@ data class DeviceResponse(
     val name: String?,
     val description: String?,
     val type: String?,
-    val attributes: List<MongoDevice.MongoDeviceAttribute?>
+    val attributes: List<DeviceAttributeResponse?>
+)
+
+data class DeviceAttributeResponse(
+    @field:JsonProperty(value = "attribute_type")
+    val attributeType: String?,
+    @field:JsonProperty(value = "attribute_value")
+    val attributeValue: String?
 )
 
 fun MongoDevice.toResponse() = DeviceResponse(
@@ -15,5 +23,10 @@ fun MongoDevice.toResponse() = DeviceResponse(
     name = name,
     description = description,
     type = type,
-    attributes = attributes
+    attributes = attributes.map { it?.toResponse() }
+)
+
+fun MongoDevice.MongoDeviceAttribute.toResponse() = DeviceAttributeResponse(
+    attributeType = attributeType,
+    attributeValue = attributeValue
 )

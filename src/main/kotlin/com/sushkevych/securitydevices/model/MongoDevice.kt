@@ -20,10 +20,10 @@ data class MongoDevice(
     @TypeAlias("DeviceAttribute")
     @Document
     data class MongoDeviceAttribute(
-        @Field(value = "attribute_value")
-        val attributeValue: String?,
         @Field(value = "attribute_type")
-        val attributeType: String?
+        val attributeType: String?,
+        @Field(value = "attribute_value")
+        val attributeValue: String?
     )
 
     companion object {
