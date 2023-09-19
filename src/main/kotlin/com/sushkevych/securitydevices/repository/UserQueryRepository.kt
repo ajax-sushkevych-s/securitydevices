@@ -35,21 +35,18 @@ class UserQueryRepository(private val mongoTemplate: MongoTemplate) : UserReposi
         val aggregation = Aggregation.newAggregation(MongoUser::class.java, matchUser, matchDevices)
 
         mongoTemplate.aggregate(aggregation, MongoUser.COLLECTION_NAME, MongoUser::class.java)
-            .mappedResults
-            .forEach { user ->
-                user.devices.forEach { device ->
-                    mongoTemplate.remove(
-                        Query(Criteria.where("user_device_id").`is`(device?.userDeviceId?.toHexString())),
-                        MongoDeviceStatus::class.java,
-                        MongoDeviceStatus.COLLECTION_NAME
-                    )
-                }
+            .mappedResults.flatMap { it.devices }.forEach {
                 mongoTemplate.remove(
-                    Query(Criteria.where("id").`is`(user.id)),
-                    MongoUser::class.java,
-                    MongoUser.COLLECTION_NAME
+                    Query(Criteria.where("user_device_id").`is`(it?.userDeviceId?.toHexString())),
+                    MongoDeviceStatus::class.java,
+                    MongoDeviceStatus.COLLECTION_NAME
                 )
             }
+        mongoTemplate.remove(
+            Query(Criteria.where("id").`is`(userId)),
+            MongoUser::class.java,
+            MongoUser.COLLECTION_NAME
+        )
     }
 
     override fun getUserByUserName(username: String): MongoUser? {

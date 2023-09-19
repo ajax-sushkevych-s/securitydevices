@@ -32,7 +32,8 @@ class DeviceQueryRepository(private val mongoTemplate: MongoTemplate) : DeviceRe
             MongoUser.COLLECTION_NAME
         )
         val userDeviceIds = usersWithDevice.flatMap { user ->
-            user.devices.mapNotNull { it?.userDeviceId?.toHexString() }
+            user.devices.filter { it?.deviceId == deviceId }
+                .mapNotNull { it?.userDeviceId?.toHexString() }
         }
 
         val deviceStatusQuery = Query(Criteria.where("user_device_id").`in`(userDeviceIds))
