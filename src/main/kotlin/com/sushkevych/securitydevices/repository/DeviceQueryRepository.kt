@@ -26,22 +26,41 @@ class DeviceQueryRepository(private val mongoTemplate: MongoTemplate) : DeviceRe
     override fun deleteById(deviceId: ObjectId) {
         val deviceQuery = Query(Criteria.where("id").`is`(deviceId))
 
-        val usersWithDevice = mongoTemplate.find(
+        val userDeviceIds = extractUserDeviceIds(getUsersWithDevice(deviceId), deviceId)
+
+        removeDeviceStatus(userDeviceIds)
+        updateUsers(deviceId)
+        removeDevice(deviceQuery)
+    }
+
+    private fun getUsersWithDevice(deviceId: ObjectId): List<MongoUser> {
+        return mongoTemplate.find(
             Query(Criteria.where("devices.device_id").`is`(deviceId)),
             MongoUser::class.java,
             MongoUser.COLLECTION_NAME
         )
-        val userDeviceIds = usersWithDevice.flatMap { user ->
+    }
+
+    private fun extractUserDeviceIds(usersWithDevice: List<MongoUser>, deviceId: ObjectId): List<String> =
+        usersWithDevice.flatMap { user ->
             user.devices.filter { it?.deviceId == deviceId }
                 .mapNotNull { it?.userDeviceId?.toHexString() }
         }
 
-        val deviceStatusQuery = Query(Criteria.where("user_device_id").`in`(userDeviceIds))
-        mongoTemplate.remove(deviceStatusQuery, MongoDeviceStatus::class.java, MongoDeviceStatus.COLLECTION_NAME)
+    private fun removeDeviceStatus(userDeviceIds: List<String>) =
+        mongoTemplate.remove(
+            Query(Criteria.where("user_device_id").`in`(userDeviceIds)),
+            MongoDeviceStatus::class.java,
+            MongoDeviceStatus.COLLECTION_NAME
+        )
 
-        val update = Update().pull("devices", Query(Criteria.where("device_id").`is`(deviceId)))
-        mongoTemplate.updateMulti(Query(), update, MongoUser::class.java)
+    private fun updateUsers(deviceId: ObjectId) =
+        mongoTemplate.updateMulti(
+            Query(),
+            Update().pull("devices", Query(Criteria.where("device_id").`is`(deviceId))),
+            MongoUser::class.java
+        )
 
+    private fun removeDevice(deviceQuery: Query) =
         mongoTemplate.remove(deviceQuery, MongoDevice::class.java, MongoDevice.COLLECTION_NAME)
-    }
 }

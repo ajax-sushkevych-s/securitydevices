@@ -4,8 +4,6 @@ import com.sushkevych.securitydevices.model.MongoDeviceStatus
 import com.sushkevych.securitydevices.model.MongoUser
 import org.bson.types.ObjectId
 import org.springframework.data.mongodb.core.MongoTemplate
-import org.springframework.data.mongodb.core.aggregation.Aggregation
-import org.springframework.data.mongodb.core.aggregation.MatchOperation
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Repository
@@ -22,31 +20,23 @@ class UserQueryRepository(private val mongoTemplate: MongoTemplate) : UserReposi
     override fun save(user: MongoUser): MongoUser = mongoTemplate.save(user, MongoUser.COLLECTION_NAME)
 
     override fun deleteById(userId: ObjectId) {
-        val matchUser = MatchOperation(
-            Criteria.where("id").`is`(userId)
-        )
+        mongoTemplate.findAndRemove(
+            Query(Criteria.where("id").`is`(userId)),
+            MongoUser::class.java,
+            MongoUser.COLLECTION_NAME
+        )?.let { deleteDeviceStatusForOwnerDevices(it) }
+    }
 
-        val matchDevices = MatchOperation(
-            Criteria.where("devices").elemMatch(
-                Criteria.where("role").`is`(MongoUser.MongoUserRole.OWNER)
-            )
-        )
-
-        val aggregation = Aggregation.newAggregation(MongoUser::class.java, matchUser, matchDevices)
-
-        mongoTemplate.aggregate(aggregation, MongoUser.COLLECTION_NAME, MongoUser::class.java)
-            .mappedResults.flatMap { it.devices }.forEach {
+    private fun deleteDeviceStatusForOwnerDevices(userToDelete: MongoUser?) {
+        userToDelete?.devices
+            ?.filter { it?.role == MongoUser.MongoUserRole.OWNER }
+            ?.forEach {
                 mongoTemplate.remove(
                     Query(Criteria.where("user_device_id").`is`(it?.userDeviceId?.toHexString())),
                     MongoDeviceStatus::class.java,
                     MongoDeviceStatus.COLLECTION_NAME
                 )
             }
-        mongoTemplate.remove(
-            Query(Criteria.where("id").`is`(userId)),
-            MongoUser::class.java,
-            MongoUser.COLLECTION_NAME
-        )
     }
 
     override fun getUserByUserName(username: String): MongoUser? {
