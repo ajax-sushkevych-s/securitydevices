@@ -9,7 +9,7 @@ data class UserResponse(
     val email: String?,
     @field:JsonProperty(value = "mobile_number")
     val mobileNumber: String?,
-    val devices: List<UserDeviceResponse>?
+    val devices: List<UserDeviceResponse?>
 )
 
 data class UserDeviceResponse(
@@ -25,10 +25,10 @@ fun MongoUser.toResponse() = UserResponse(
     username = username,
     email = email,
     mobileNumber = mobileNumber,
-    devices = devices?.map { it.toResponse() }
+    devices = devices.map { it?.toResponse() }
 )
 
-fun MongoUser.MongoUserDevice.toResponse() = UserDeviceResponse (
+fun MongoUser.MongoUserDevice.toResponse() = UserDeviceResponse(
     deviceId = deviceId?.toHexString(),
     userDeviceId = userDeviceId?.toHexString(),
     role = role

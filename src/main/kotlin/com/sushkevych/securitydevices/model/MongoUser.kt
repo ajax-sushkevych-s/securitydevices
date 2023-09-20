@@ -17,7 +17,7 @@ data class MongoUser(
     @Field(value = "mobile_number")
     val mobileNumber: String?,
     val password: String?,
-    val devices: List<MongoUserDevice>?
+    val devices: List<MongoUserDevice?>
 ) {
     @TypeAlias("UserDevice")
     @Document

@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  mongo-db:
+  mongo-security-devices:
     image: mongo
     ports:
       - "27017:27017"
@@ -12,6 +12,19 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=root
       - MONGO_INITDB_DATABASE=mongo-db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      timeout: 5s
+      retries: 10
+
+  secutiry-app:
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      mongo-security-devices:
+        condition: service_healthy
 
 volumes:
   mongo-data:

@@ -1,5 +1,6 @@
 package com.sushkevych.securitydevices.repository
 
+import com.sushkevych.securitydevices.model.MongoDeviceStatus
 import com.sushkevych.securitydevices.model.MongoUser
 import org.bson.types.ObjectId
 import org.springframework.data.mongodb.core.MongoTemplate
@@ -14,17 +15,28 @@ class UserQueryRepository(private val mongoTemplate: MongoTemplate) : UserReposi
         return mongoTemplate.findOne(query, MongoUser::class.java, MongoUser.COLLECTION_NAME)
     }
 
-    override fun findAll(): List<MongoUser> {
-        return mongoTemplate.findAll(MongoUser::class.java, MongoUser.COLLECTION_NAME)
+    override fun findAll(): List<MongoUser> = mongoTemplate.findAll(MongoUser::class.java, MongoUser.COLLECTION_NAME)
+
+    override fun save(user: MongoUser): MongoUser = mongoTemplate.save(user, MongoUser.COLLECTION_NAME)
+
+    override fun deleteById(userId: ObjectId) {
+        mongoTemplate.findAndRemove(
+            Query(Criteria.where("id").`is`(userId)),
+            MongoUser::class.java,
+            MongoUser.COLLECTION_NAME
+        )?.let { deleteDeviceStatusForOwnerDevices(it) }
     }
 
-    override fun save(user: MongoUser): MongoUser {
-        return mongoTemplate.save(user, MongoUser.COLLECTION_NAME)
-    }
-
-    override fun deleteById(id: ObjectId) {
-        val query = Query(Criteria.where("id").`is`(id))
-        mongoTemplate.remove(query, MongoUser::class.java, MongoUser.COLLECTION_NAME)
+    private fun deleteDeviceStatusForOwnerDevices(userToDelete: MongoUser?) {
+        userToDelete?.devices
+            ?.filter { it?.role == MongoUser.MongoUserRole.OWNER }
+            ?.forEach {
+                mongoTemplate.remove(
+                    Query(Criteria.where("user_device_id").`is`(it?.userDeviceId?.toHexString())),
+                    MongoDeviceStatus::class.java,
+                    MongoDeviceStatus.COLLECTION_NAME
+                )
+            }
     }
 
     override fun getUserByUserName(username: String): MongoUser? {
