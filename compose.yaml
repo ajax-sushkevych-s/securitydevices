@@ -14,8 +14,9 @@ services:
       - MONGO_INITDB_DATABASE=mongo-db
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      timeout: 5s
-      retries: 10
+      interval: 1s
+      timeout: 1s
+      retries: 5
 
   secutiry-app:
     build:
