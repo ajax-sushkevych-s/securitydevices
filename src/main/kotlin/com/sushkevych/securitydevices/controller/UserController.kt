@@ -1,6 +1,8 @@
 package com.sushkevych.securitydevices.controller
 
 import com.sushkevych.securitydevices.dto.request.UserRequest
+import com.sushkevych.securitydevices.dto.response.CursorPaginateResponse
+import com.sushkevych.securitydevices.dto.response.OffsetPaginateResponse
 import com.sushkevych.securitydevices.dto.response.UserResponse
 import com.sushkevych.securitydevices.model.MongoUser
 import com.sushkevych.securitydevices.service.UserService
@@ -56,4 +58,16 @@ class UserController(private val userService: UserService) {
     @GetMapping(params = ["role"])
     fun findUsersWithSpecificRole(@RequestParam("role") role: MongoUser.MongoUserRole): List<UserResponse> =
         userService.findUsersWithSpecificRole(role)
+
+    @GetMapping(params = ["offset", "limit"], value = ["/offsetPagination"])
+    fun getUsersByOffsetPagination(
+        @RequestParam offset: Int,
+        @RequestParam limit: Int
+    ): OffsetPaginateResponse = userService.getUsersByOffsetPagination(offset, limit)
+
+    @GetMapping("/cursorPagination")
+    fun getUsersByCursorBasedPagination(
+        @RequestParam(name = "pageSize") pageSize: Int,
+        @RequestParam(name = "cursor", required = false) cursor: String?
+    ): CursorPaginateResponse = userService.getUsersByCursorBasedPagination(pageSize, cursor)
 }

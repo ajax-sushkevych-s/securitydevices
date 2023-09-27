@@ -11,12 +11,12 @@ db.device.insert([
         "type": "Camera",
         "attributes": [
             {
-                "attribute_type": "Resolution",
-                "attribute_value": "4K"
+                "attributeType": "Resolution",
+                "attributeValue": "4K"
             },
             {
-                "attribute_type": "Night Vision",
-                "attribute_value": "Yes"
+                "attributeType": "Night Vision",
+                "attributeValue": "Yes"
             }
         ]
     },
@@ -27,12 +27,12 @@ db.device.insert([
         "type": "DoorProtect",
         "attributes": [
             {
-                "attribute_type": "Lock Type",
-                "attribute_value": "Electronic"
+                "attributeType": "Lock Type",
+                "attributeValue": "Electronic"
             },
             {
-                "attribute_type": "Access Method",
-                "attribute_value": "Keyless Entry"
+                "attributeType": "Access Method",
+                "attributeValue": "Keyless Entry"
             }
         ]
     },
@@ -43,12 +43,12 @@ db.device.insert([
         "type": "LeaksProtect",
         "attributes": [
             {
-                "attribute_type": "Alert Threshold",
-                "attribute_value": "Low"
+                "attributeType": "Alert Threshold",
+                "attributeValue": "Low"
             },
             {
-                "attribute_type": "Sensor Type",
-                "attribute_value": "Moisture"
+                "attributeType": "Sensor Type",
+                "attributeValue": "Moisture"
             }
         ]
     },
@@ -59,12 +59,12 @@ db.device.insert([
         "type": "SmartSocket",
         "attributes": [
             {
-                "attribute_type": "Control Type",
-                "attribute_value": "Remote"
+                "attributeType": "Control Type",
+                "attributeValue": "Remote"
             },
             {
-                "attribute_type": "Power Consumption",
-                "attribute_value": "10W"
+                "attributeType": "Power Consumption",
+                "attributeValue": "10W"
             }
         ]
     }
@@ -82,17 +82,17 @@ db.user.insert([
     {
         "username": "HansSchmidt",
         "email": "hans.schmidt@example.com",
-        "mobile_number": "+491234567890",
+        "mobileNumber": "+491234567890",
         "password": "hashed_password",
         "devices": [
             {
-                "device_id": getRandomDeviceId(),
-                "user_device_id": ObjectId(),
+                "deviceId": getRandomDeviceId(),
+                "userDeviceId": ObjectId(),
                 "role": "OWNER"
             },
             {
-                "device_id": getRandomDeviceId(),
-                "user_device_id": ObjectId(),
+                "deviceId": getRandomDeviceId(),
+                "userDeviceId": ObjectId(),
                 "role": "VIEWER"
             }
         ]
@@ -100,12 +100,12 @@ db.user.insert([
     {
         "username": "MariaMuller",
         "email": "maria.muller@example.com",
-        "mobile_number": "+49876543210",
+        "mobileNumber": "+49876543210",
         "password": "hashed_password",
         "devices": [
             {
-                "device_id": getRandomDeviceId(),
-                "user_device_id": ObjectId(),
+                "deviceId": getRandomDeviceId(),
+                "userDeviceId": ObjectId(),
                 "role": "OWNER"
             }
         ]
@@ -113,12 +113,12 @@ db.user.insert([
     {
         "username": "AnnaSchneider",
         "email": "anna.schneider@example.com",
-        "mobile_number": "+491234567891",
+        "mobileNumber": "+491234567891",
         "password": "hashed_password",
         "devices": [
             {
-                "device_id": getRandomDeviceId(),
-                "user_device_id": ObjectId(),
+                "deviceId": getRandomDeviceId(),
+                "userDeviceId": ObjectId(),
                 "role": "OWNER"
             }
         ]
@@ -126,12 +126,12 @@ db.user.insert([
     {
         "username": "MaxWagner",
         "email": "max.wagner@example.com",
-        "mobile_number": "+49876543211",
+        "mobileNumber": "+49876543211",
         "password": "hashed_password",
         "devices": [
             {
-                "device_id": getRandomDeviceId(),
-                "user_device_id": ObjectId(),
+                "deviceId": getRandomDeviceId(),
+                "userDeviceId": ObjectId(),
                 "role": "VIEWER"
             }
         ]
@@ -139,19 +139,19 @@ db.user.insert([
     {
         "username": "SophieBecker",
         "email": "sophie.becker@example.com",
-        "mobile_number": "+491234567892",
+        "mobileNumber": "+491234567892",
         "password": "hashed_password",
         "devices": []
     },
     {
         "username": "LukasSchulz",
         "email": "lukas.schulz@example.com",
-        "mobile_number": "+49876543212",
+        "mobileNumber": "+49876543212",
         "password": "hashed_password",
         "devices": [
             {
-                "device_id": getRandomDeviceId(),
-                "user_device_id": ObjectId(),
+                "deviceId": getRandomDeviceId(),
+                "userDeviceId": ObjectId(),
                 "role": "OWNER"
             }
         ]
@@ -159,12 +159,12 @@ db.user.insert([
     {
         "username": "ElenaKoch",
         "email": "elena.koch@example.com",
-        "mobile_number": "+491234567893",
+        "mobileNumber": "+491234567893",
         "password": "hashed_password",
         "devices": [
             {
-                "device_id": getRandomDeviceId(),
-                "user_device_id": ObjectId(),
+                "deviceId": getRandomDeviceId(),
+                "userDeviceId": ObjectId(),
                 "role": "VIEWER"
             }
         ]
@@ -172,12 +172,12 @@ db.user.insert([
     {
             "username": "User1",
             "email": "user1@example.com",
-            "mobile_number": "+1111111111",
+            "mobileNumber": "+1111111111",
             "password": "hashed_password",
             "devices": [
                 {
-                    "device_id": getRandomDeviceId(),
-                    "user_device_id": ObjectId(),
+                    "deviceId": getRandomDeviceId(),
+                    "userDeviceId": ObjectId(),
                     "role": "OWNER"
                 }
             ]
@@ -185,12 +185,12 @@ db.user.insert([
         {
             "username": "User2",
             "email": "user2@example.com",
-            "mobile_number": "+2222222222",
+            "mobileNumber": "+2222222222",
             "password": "hashed_password",
             "devices": [
                 {
-                    "device_id": getRandomDeviceId(),
-                    "user_device_id": ObjectId(),
+                    "deviceId": getRandomDeviceId(),
+                    "userDeviceId": ObjectId(),
                     "role": "VIEWER"
                 }
             ]
@@ -202,8 +202,8 @@ db.user.insert([
             "password": "hashed_password",
             "devices": [
                 {
-                    "device_id": getRandomDeviceId(),
-                    "user_device_id": ObjectId(),
+                    "deviceId": getRandomDeviceId(),
+                    "userDeviceId": ObjectId(),
                     "role": "OWNER"
                 }
             ]
@@ -211,12 +211,12 @@ db.user.insert([
         {
             "username": "User4",
             "email": "user4@example.com",
-            "mobile_number": "+4444444444",
+            "mobileNumber": "+4444444444",
             "password": "hashed_password",
             "devices": [
                 {
-                    "device_id": getRandomDeviceId(),
-                    "user_device_id": ObjectId(),
+                    "deviceId": getRandomDeviceId(),
+                    "userDeviceId": ObjectId(),
                     "role": "VIEWER"
                 }
             ]
@@ -224,12 +224,12 @@ db.user.insert([
         {
             "username": "User5",
             "email": "user5@example.com",
-            "mobile_number": "+5555555555",
+            "mobileNumber": "+5555555555",
             "password": "hashed_password",
             "devices": [
                 {
-                    "device_id": getRandomDeviceId(),
-                    "user_device_id": ObjectId(),
+                    "deviceId": getRandomDeviceId(),
+                    "userDeviceId": ObjectId(),
                     "role": "OWNER"
                 }
             ]
@@ -237,12 +237,12 @@ db.user.insert([
         {
             "username": "User6",
             "email": "user6@example.com",
-            "mobile_number": "+6666666666",
+            "mobileNumber": "+6666666666",
             "password": "hashed_password",
             "devices": [
                 {
-                    "device_id": getRandomDeviceId(),
-                    "user_device_id": ObjectId(),
+                    "deviceId": getRandomDeviceId(),
+                    "userDeviceId": ObjectId(),
                     "role": "VIEWER"
                 }
             ]
@@ -250,12 +250,12 @@ db.user.insert([
         {
             "username": "User7",
             "email": "user7@example.com",
-            "mobile_number": "+7777777777",
+            "mobileNumber": "+7777777777",
             "password": "hashed_password",
             "devices": [
                 {
-                    "device_id": getRandomDeviceId(),
-                    "user_device_id": ObjectId(),
+                    "deviceId": getRandomDeviceId(),
+                    "userDeviceId": ObjectId(),
                     "role": "OWNER"
                 }
             ]
@@ -263,12 +263,12 @@ db.user.insert([
         {
             "username": "User8",
             "email": "user8@example.com",
-            "mobile_number": "+8888888888",
+            "mobileNumber": "+8888888888",
             "password": "hashed_password",
             "devices": [
                 {
-                    "device_id": getRandomDeviceId(),
-                    "user_device_id": ObjectId(),
+                    "deviceId": getRandomDeviceId(),
+                    "userDeviceId": ObjectId(),
                     "role": "VIEWER"
                 }
             ]
@@ -276,12 +276,12 @@ db.user.insert([
         {
             "username": "User9",
             "email": "user9@example.com",
-            "mobile_number": "+9999999999",
+            "mobileNumber": "+9999999999",
             "password": "hashed_password",
             "devices": [
                 {
-                    "device_id": getRandomDeviceId(),
-                    "user_device_id": ObjectId(),
+                    "deviceId": getRandomDeviceId(),
+                    "userDeviceId": ObjectId(),
                     "role": "OWNER"
                 }
             ]
@@ -289,12 +289,12 @@ db.user.insert([
         {
             "username": "User10",
             "email": "user10@example.com",
-            "mobile_number": "+1010101010",
+            "mobileNumber": "+1010101010",
             "password": "hashed_password",
             "devices": [
                 {
-                    "device_id": getRandomDeviceId(),
-                    "user_device_id": ObjectId(),
+                    "deviceId": getRandomDeviceId(),
+                    "userDeviceId": ObjectId(),
                     "role": "VIEWER"
                 }
             ]

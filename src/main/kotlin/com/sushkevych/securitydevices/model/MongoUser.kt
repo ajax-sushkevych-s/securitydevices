@@ -1,20 +1,20 @@
 package com.sushkevych.securitydevices.model
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.sushkevych.securitydevices.model.MongoUser.Companion.COLLECTION_NAME
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.TypeAlias
 import org.springframework.data.mongodb.core.mapping.Document
-import org.springframework.data.mongodb.core.mapping.Field
 
 @TypeAlias("User")
 @Document(value = COLLECTION_NAME)
 data class MongoUser(
     @Id
+    @field:JsonProperty(value = "_id")
     val id: ObjectId?,
     val username: String?,
     val email: String?,
-    @Field(value = "mobile_number")
     val mobileNumber: String?,
     val password: String?,
     val devices: List<MongoUserDevice?>
@@ -22,9 +22,7 @@ data class MongoUser(
     @TypeAlias("UserDevice")
     @Document
     data class MongoUserDevice(
-        @Field(value = "device_id")
         val deviceId: ObjectId?,
-        @Field(value = "user_device_id")
         val userDeviceId: ObjectId?,
         val role: MongoUserRole?
     )

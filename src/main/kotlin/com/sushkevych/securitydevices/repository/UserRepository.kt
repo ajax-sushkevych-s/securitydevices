@@ -19,4 +19,8 @@ interface UserRepository {
     fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): List<MongoUser>
 
     fun findUsersWithoutDevices(): List<MongoUser>
+
+    fun getUsersByOffsetPagination(offset: Int, limit: Int): Pair<List<MongoUser>, Long>
+
+    fun getUsersByCursorBasedPagination(pageSize: Int, cursor: String?): Pair<List<MongoUser>, Long>
 }
