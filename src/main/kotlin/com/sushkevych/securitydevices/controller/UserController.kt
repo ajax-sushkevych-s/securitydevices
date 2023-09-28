@@ -61,13 +61,13 @@ class UserController(private val userService: UserService) {
 
     @GetMapping(params = ["offset", "limit"], value = ["/offsetPagination"])
     fun getUsersByOffsetPagination(
-        @RequestParam offset: Int,
-        @RequestParam limit: Int
+        @RequestParam(defaultValue = "0") offset: Int,
+        @RequestParam(defaultValue = "50") limit: Int
     ): OffsetPaginateResponse = userService.getUsersByOffsetPagination(offset, limit)
 
     @GetMapping("/cursorPagination")
     fun getUsersByCursorBasedPagination(
-        @RequestParam(name = "pageSize") pageSize: Int,
+        @RequestParam(name = "pageSize", defaultValue = "50") pageSize: Int,
         @RequestParam(name = "cursor", required = false) cursor: String?
     ): CursorPaginateResponse = userService.getUsersByCursorBasedPagination(pageSize, cursor)
 }

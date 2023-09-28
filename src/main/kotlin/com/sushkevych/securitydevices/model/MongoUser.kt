@@ -1,6 +1,5 @@
 package com.sushkevych.securitydevices.model
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.sushkevych.securitydevices.model.MongoUser.Companion.COLLECTION_NAME
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.Id
@@ -11,7 +10,6 @@ import org.springframework.data.mongodb.core.mapping.Document
 @Document(value = COLLECTION_NAME)
 data class MongoUser(
     @Id
-    @field:JsonProperty(value = "_id")
     val id: ObjectId?,
     val username: String?,
     val email: String?,

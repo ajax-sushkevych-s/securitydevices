@@ -19,47 +19,47 @@ class UserQueryRepository(private val mongoTemplate: MongoTemplate, private val 
     UserRepository {
     override fun getUserById(id: ObjectId): MongoUser? {
         val query = Query().addCriteria(Criteria.where("id").`is`(id))
-        return mongoTemplate.findOne(query, MongoUser::class.java, MongoUser.COLLECTION_NAME)
+        return mongoTemplate.findOne(query, MongoUser::class.java)
     }
 
-    override fun findAll(): List<MongoUser> = mongoTemplate.findAll(MongoUser::class.java, MongoUser.COLLECTION_NAME)
+    override fun findAll(): List<MongoUser> = mongoTemplate.findAll(MongoUser::class.java)
 
-    override fun save(user: MongoUser): MongoUser = mongoTemplate.save(user, MongoUser.COLLECTION_NAME)
+    override fun save(user: MongoUser): MongoUser = mongoTemplate.save(user)
 
     override fun deleteById(userId: ObjectId) {
         mongoTemplate.findAndRemove(
-            Query(Criteria.where("id").`is`(userId)), MongoUser::class.java, MongoUser.COLLECTION_NAME
+            Query(Criteria.where("id").`is`(userId)), MongoUser::class.java
         )?.let { deleteDeviceStatusForOwnerDevices(it) }
     }
 
-    private fun deleteDeviceStatusForOwnerDevices(userToDelete: MongoUser?) {
-        userToDelete?.devices?.filter { it?.role == MongoUser.MongoUserRole.OWNER }?.forEach {
-            mongoTemplate.remove(
-                Query(Criteria.where("user_device_id").`is`(it?.userDeviceId?.toHexString())),
-                MongoDeviceStatus::class.java,
-                MongoDeviceStatus.COLLECTION_NAME
-            )
-        }
+    private fun deleteDeviceStatusForOwnerDevices(userToDelete: MongoUser) {
+        val devicesToRemove: List<String?> = userToDelete.devices.asSequence()
+            .filter { it?.role == MongoUser.MongoUserRole.OWNER }
+            .map { it?.userDeviceId?.toHexString() }
+            .toList()
+        mongoTemplate.remove(
+            Query(Criteria.where("user_device_id").`in`(devicesToRemove)), MongoDeviceStatus::class.java
+        )
     }
 
     override fun getUserByUserName(username: String): MongoUser? {
         val query = Query(Criteria.where("username").`is`(username))
-        return mongoTemplate.findOne(query, MongoUser::class.java, MongoUser.COLLECTION_NAME)
+        return mongoTemplate.findOne(query, MongoUser::class.java)
     }
 
     override fun findUsersWithSpecificDevice(deviceId: ObjectId): List<MongoUser> {
         val query = Query(Criteria.where("devices.deviceId").`is`(deviceId))
-        return mongoTemplate.find(query, MongoUser::class.java, MongoUser.COLLECTION_NAME)
+        return mongoTemplate.find(query, MongoUser::class.java)
     }
 
     override fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): List<MongoUser> {
         val query = Query(Criteria.where("devices.role").`is`(role))
-        return mongoTemplate.find(query, MongoUser::class.java, MongoUser.COLLECTION_NAME)
+        return mongoTemplate.find(query, MongoUser::class.java)
     }
 
     override fun findUsersWithoutDevices(): List<MongoUser> {
         val query = Query(Criteria.where("devices").`is`(emptyList<Any>()))
-        return mongoTemplate.find(query, MongoUser::class.java, MongoUser.COLLECTION_NAME)
+        return mongoTemplate.find(query, MongoUser::class.java)
     }
 
     override fun getUsersByOffsetPagination(offset: Int, limit: Int): Pair<List<MongoUser>, Long> {
@@ -67,11 +67,9 @@ class UserQueryRepository(private val mongoTemplate: MongoTemplate, private val 
             MongoUser::class.java,
             Aggregation.skip(offset.toLong()),
             Aggregation.limit(limit.toLong()),
-            Aggregation.facet().and(
-                Aggregation.project().andExclude("_class")
-            ).`as`("users").and(
-                Aggregation.count().`as`("totalCount")
-            ).`as`("totalCount")
+            Aggregation.facet()
+                .and(Aggregation.project(MongoUser::class.java)).`as`("users")
+                .and(Aggregation.count().`as`("totalCount")).`as`("totalCount")
         )
 
         return getUsersAndTotalCountFromAggregationResult(aggregation)
@@ -87,11 +85,9 @@ class UserQueryRepository(private val mongoTemplate: MongoTemplate, private val 
             matchByCursor,
             Aggregation.sort(Sort.by(Sort.Order.asc("_id"))),
             Aggregation.limit(pageSize.toLong()),
-            Aggregation.facet().and(
-                Aggregation.project().andExclude("_class")
-            ).`as`("users").and(
-                Aggregation.count().`as`("totalCount")
-            ).`as`("totalCount")
+            Aggregation.facet()
+                .and(Aggregation.project(MongoUser::class.java)).`as`("users")
+                .and(Aggregation.count().`as`("totalCount")).`as`("totalCount")
         )
 
         return getUsersAndTotalCountFromAggregationResult(aggregation)
@@ -130,7 +126,8 @@ class UserQueryRepository(private val mongoTemplate: MongoTemplate, private val 
         }
 
         return userMap.toMutableMap().apply {
-            this["_id"] = idValue.toHexString()
+            this.remove("_id")
+            this["id"] = idValue.toHexString()
             this["devices"] = modifiedDevicesList
         }
     }

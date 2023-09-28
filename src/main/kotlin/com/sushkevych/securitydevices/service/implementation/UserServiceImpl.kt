@@ -50,16 +50,16 @@ class UserServiceImpl(private val userRepository: UserRepository) : UserService 
         userRepository.findUsersWithSpecificRole(role).map { it.toResponse() }
 
     override fun getUsersByOffsetPagination(offset: Int, limit: Int): OffsetPaginateResponse {
-        val totalDocuments = userRepository.getUsersByOffsetPagination(offset, limit).second
-        val mappedUsersToResponse =
-            userRepository.getUsersByOffsetPagination(offset, limit).first.map { it.toResponse() }
+        val usersByOffsetPagination = userRepository.getUsersByOffsetPagination(offset, limit)
+        val mappedUsersToResponse = usersByOffsetPagination.first.map { it.toResponse() }
+        val totalDocuments = usersByOffsetPagination.second
         return OffsetPaginateResponse(mappedUsersToResponse, totalDocuments)
     }
 
     override fun getUsersByCursorBasedPagination(pageSize: Int, cursor: String?): CursorPaginateResponse {
-        val totalDocuments = userRepository.getUsersByCursorBasedPagination(pageSize, cursor).second
-        val mappedUsersToResponse =
-            userRepository.getUsersByCursorBasedPagination(pageSize, cursor).first.map { it.toResponse() }
+        val usersByCursorBasedPagination = userRepository.getUsersByCursorBasedPagination(pageSize, cursor)
+        val mappedUsersToResponse = usersByCursorBasedPagination.first.map { it.toResponse() }
+        val totalDocuments = usersByCursorBasedPagination.second
         val nextCursor =
             if (mappedUsersToResponse.size == pageSize) mappedUsersToResponse.last().id.toString() else null
         return CursorPaginateResponse(mappedUsersToResponse, nextCursor, totalDocuments)
