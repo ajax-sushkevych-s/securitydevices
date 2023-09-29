@@ -1,6 +1,5 @@
 package com.sushkevych.securitydevices.dto.request
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.sushkevych.securitydevices.model.MongoUser
 import jakarta.validation.constraints.NotEmpty
 import org.bson.types.ObjectId
@@ -12,16 +11,13 @@ data class UserRequest(
     @field:NotEmpty(message = "Email cannot be empty.")
     val email: String,
     @field:NotEmpty(message = "Mobile number cannot be empty.")
-    @field:JsonProperty(value = "mobile_number")
     val mobileNumber: String,
     val password: String,
     val devices: List<UserDeviceRequest>
 )
 
 data class UserDeviceRequest(
-    @field:JsonProperty(value = "device_id")
     val deviceId: String?,
-    @field:JsonProperty(value = "user_device_id")
     val userDeviceId: String?,
     val role: MongoUser.MongoUserRole?
 )
@@ -35,7 +31,7 @@ fun UserRequest.toEntity() = MongoUser(
     devices = devices.map { it.toEntity() }
 )
 
-fun UserDeviceRequest.toEntity() = MongoUser.MongoUserDevice (
+fun UserDeviceRequest.toEntity() = MongoUser.MongoUserDevice(
     deviceId = ObjectId(deviceId),
     userDeviceId = ObjectId(userDeviceId),
     role = role

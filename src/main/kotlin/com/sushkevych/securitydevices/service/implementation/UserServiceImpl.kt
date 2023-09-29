@@ -3,6 +3,8 @@ package com.sushkevych.securitydevices.service.implementation
 import com.sushkevych.securitydevices.annotation.DeviceAuthorization
 import com.sushkevych.securitydevices.dto.request.UserRequest
 import com.sushkevych.securitydevices.dto.request.toEntity
+import com.sushkevych.securitydevices.dto.response.CursorPaginateResponse
+import com.sushkevych.securitydevices.dto.response.OffsetPaginateResponse
 import com.sushkevych.securitydevices.dto.response.UserResponse
 import com.sushkevych.securitydevices.dto.response.toResponse
 import com.sushkevych.securitydevices.exception.NotFoundException
@@ -46,4 +48,20 @@ class UserServiceImpl(private val userRepository: UserRepository) : UserService 
 
     override fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): List<UserResponse> =
         userRepository.findUsersWithSpecificRole(role).map { it.toResponse() }
+
+    override fun getUsersByOffsetPagination(offset: Int, limit: Int): OffsetPaginateResponse {
+        val usersByOffsetPagination = userRepository.getUsersByOffsetPagination(offset, limit)
+        val mappedUsersToResponse = usersByOffsetPagination.first.map { it.toResponse() }
+        val totalDocuments = usersByOffsetPagination.second
+        return OffsetPaginateResponse(mappedUsersToResponse, totalDocuments)
+    }
+
+    override fun getUsersByCursorBasedPagination(pageSize: Int, cursor: String?): CursorPaginateResponse {
+        val usersByCursorBasedPagination = userRepository.getUsersByCursorBasedPagination(pageSize, cursor)
+        val mappedUsersToResponse = usersByCursorBasedPagination.first.map { it.toResponse() }
+        val totalDocuments = usersByCursorBasedPagination.second
+        val nextCursor =
+            if (mappedUsersToResponse.size == pageSize) mappedUsersToResponse.last().id.toString() else null
+        return CursorPaginateResponse(mappedUsersToResponse, nextCursor, totalDocuments)
+    }
 }

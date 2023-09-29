@@ -1,6 +1,5 @@
 package com.sushkevych.securitydevices.dto.request
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.sushkevych.securitydevices.model.MongoDevice
 import jakarta.validation.constraints.NotEmpty
 import org.bson.types.ObjectId
@@ -17,9 +16,7 @@ data class DeviceRequest(
 )
 
 data class DeviceAttributeRequest(
-    @field:JsonProperty(value = "attribute_type")
     val attributeType: String?,
-    @field:JsonProperty(value = "attribute_value")
     val attributeValue: String?
 )
 

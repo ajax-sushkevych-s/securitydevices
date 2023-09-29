@@ -5,7 +5,6 @@ import org.bson.types.ObjectId
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.TypeAlias
 import org.springframework.data.mongodb.core.mapping.Document
-import org.springframework.data.mongodb.core.mapping.Field
 
 @TypeAlias("Device")
 @Document(value = COLLECTION_NAME)
@@ -20,9 +19,7 @@ data class MongoDevice(
     @TypeAlias("DeviceAttribute")
     @Document
     data class MongoDeviceAttribute(
-        @Field(value = "attribute_type")
         val attributeType: String?,
-        @Field(value = "attribute_value")
         val attributeValue: String?
     )
 
