@@ -18,24 +18,12 @@ services:
       timeout: 1s
       retries: 5
 
-  nats-security-devices:
-    image: nats
-    ports:
-      - "4222:4222"
-    healthcheck:
-      test: ["CMD", "nats", "ping"]
-      interval: 1s
-      timeout: 1s
-      retries: 5
-
   secutiry-app:
     build:
       context: .
     ports:
       - "8080:8080"
     depends_on:
-      nats-security-devices:
-        condition: service_started
       mongo-security-devices:
         condition: service_healthy
 
