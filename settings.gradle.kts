@@ -1,1 +1,6 @@
-rootProject.name = "securitydevices"
+rootProject.name = "security-app"
+
+include(
+    "internal-api",
+    "securitydevices"
+)
