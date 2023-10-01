@@ -7,7 +7,7 @@ RUN mkdir $APP_HOME
 
 WORKDIR $APP_HOME
 
-COPY build/libs/securitydevices-*.jar $APP_HOME/app.jar
+COPY securitydevices/build/libs/securitydevices-*.jar $APP_HOME/app.jar
 
 EXPOSE 8080
 

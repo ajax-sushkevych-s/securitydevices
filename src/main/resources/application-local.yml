@@ -1,6 +1,0 @@
-spring:
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-  data:
-    mongodb:
-      uri: mongodb://root:root@localhost:27017/mongo-db?authSource=admin
