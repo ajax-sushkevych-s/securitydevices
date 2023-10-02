@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package com.sushkevych.securitydevices.input.request.device.update.proto;
+
+option java_multiple_files = true;
+
+import "com/sushkevych/securitydevices/commonmodels/device/device.proto";
+
+message UpdateDeviceRequest {
+  commonmodels.device.DeviceRequest request = 1;
+}
+
+message UpdateDeviceResponse {
+  commonmodels.device.DeviceResponse response = 1;
+}

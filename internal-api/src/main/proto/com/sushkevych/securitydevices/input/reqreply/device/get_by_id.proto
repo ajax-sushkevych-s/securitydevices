@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package com.sushkevych.securitydevices.input.request.device.get_by_id.proto;
+
+option java_multiple_files = true;
+
+import "com/sushkevych/securitydevices/commonmodels/device/device.proto";
+
+message GetByIdDeviceRequest {
+  commonmodels.device.DeviceRequest request = 1;
+}
+
+message GetByIdDeviceResponse {
+  commonmodels.device.DeviceResponse response = 1;
+}
