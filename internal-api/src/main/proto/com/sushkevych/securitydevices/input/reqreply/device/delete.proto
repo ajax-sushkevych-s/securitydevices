@@ -1,15 +1,26 @@
 syntax = "proto3";
 
-package com.sushkevych.securitydevices.input.request.device.delete.proto;
+package com.sushkevych.securitydevices.request.device.delete.proto;
 
 option java_multiple_files = true;
 
 import "com/sushkevych/securitydevices/commonmodels/device/device.proto";
 
 message DeleteDeviceRequest {
-  commonmodels.device.DeleteDeviceRequest request = 1;
+  string deviceId = 1;
 }
 
 message DeleteDeviceResponse {
-  commonmodels.device.DeleteDeviceResponse response = 1;
+  oneof response {
+    Success success = 1;
+    Failure failure = 2;
+  }
+
+  message Success {
+
+  }
+
+  message Failure {
+    string message = 100;
+  }
 }

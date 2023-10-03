@@ -30,36 +30,19 @@ fun MongoDevice.MongoDeviceAttribute.toResponse() = DeviceAttributeResponse(
     attributeValue = attributeValue
 )
 
-fun DeviceResponse.toDevice(): Device {
+fun DeviceResponse.toProtoDevice(): Device {
     return Device.newBuilder()
         .setId(this.id)
         .setName(this.name)
         .setDescription(this.description)
         .setType(this.type)
-        .addAllAttributes(this.attributes.map { it?.toDeviceAttribute() })
+        .addAllAttributes(this.attributes.map { it?.toProtoDeviceAttribute() })
         .build()
 }
 
-fun DeviceAttributeResponse.toDeviceAttribute(): DeviceAttribute {
+fun DeviceAttributeResponse.toProtoDeviceAttribute(): DeviceAttribute {
     return DeviceAttribute.newBuilder()
         .setAttributeType(this.attributeType)
         .setAttributeValue(this.attributeValue)
         .build()
-}
-
-fun Device.toDeviceResponse(): DeviceResponse {
-    return DeviceResponse(
-        id = id,
-        name = name,
-        description = description,
-        type = type,
-        attributes = attributesList.map { it.toDeviceAttributeResponse() }
-    )
-}
-
-fun DeviceAttribute.toDeviceAttributeResponse(): DeviceAttributeResponse {
-    return DeviceAttributeResponse(
-        attributeType = attributeType,
-        attributeValue = attributeValue
-    )
 }

@@ -51,20 +51,3 @@ fun DeviceAttribute.toDeviceAttributeRequest(): DeviceAttributeRequest {
         attributeValue = this.attributeValue
     )
 }
-
-fun DeviceRequest.toDevice(): Device {
-    return Device.newBuilder()
-        .setId(this.id ?: ObjectId().toHexString())
-        .setName(this.name)
-        .setDescription(this.description)
-        .setType(this.type)
-        .addAllAttributes(this.attributes.map { it.toDeviceAttribute() })
-        .build()
-}
-
-fun DeviceAttributeRequest.toDeviceAttribute(): DeviceAttribute {
-    return DeviceAttribute.newBuilder()
-        .setAttributeType(this.attributeType)
-        .setAttributeValue(this.attributeValue)
-        .build()
-}

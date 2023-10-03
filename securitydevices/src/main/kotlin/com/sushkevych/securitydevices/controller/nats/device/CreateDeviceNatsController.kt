@@ -5,9 +5,9 @@ import com.sushkevych.internalapi.NatsSubject.Device.CREATE
 import com.sushkevych.securitydevices.commonmodels.device.Device
 import com.sushkevych.securitydevices.controller.nats.NatsController
 import com.sushkevych.securitydevices.dto.request.toDeviceRequest
-import com.sushkevych.securitydevices.dto.response.toDevice
-import com.sushkevych.securitydevices.input.request.device.create.proto.CreateDeviceRequest
-import com.sushkevych.securitydevices.input.request.device.create.proto.CreateDeviceResponse
+import com.sushkevych.securitydevices.dto.response.toProtoDevice
+import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceRequest
+import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceResponse
 import com.sushkevych.securitydevices.service.DeviceService
 import io.nats.client.Connection
 import org.springframework.stereotype.Component
@@ -22,22 +22,20 @@ class CreateDeviceNatsController(
     override val parser: Parser<CreateDeviceRequest> = CreateDeviceRequest.parser()
 
     override fun handle(request: CreateDeviceRequest): CreateDeviceResponse = runCatching {
-        val device = request.request.device.toDeviceRequest()
+        val device = request.device.toDeviceRequest()
         val saveDevice = deviceService.saveDevice(device)
-        buildSuccessResponse(saveDevice.toDevice())
+        buildSuccessResponse(saveDevice.toProtoDevice())
     }.getOrElse { exception ->
         buildFailureResponse(exception.javaClass.simpleName, exception.toString())
     }
 
     private fun buildSuccessResponse(device: Device): CreateDeviceResponse =
         CreateDeviceResponse.newBuilder().apply {
-            responseBuilder.successBuilder
-                .setDevice(device)
+            successBuilder.setDevice(device)
         }.build()
 
     private fun buildFailureResponse(exception: String, message: String): CreateDeviceResponse =
         CreateDeviceResponse.newBuilder().apply {
-            responseBuilder.failureBuilder
-                .setMessage("Device creation failed by $exception: $message")
+            failureBuilder.setMessage("Device creation failed by $exception: $message")
         }.build()
 }
