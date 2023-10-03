@@ -7,9 +7,9 @@ option java_multiple_files = true;
 import "com/sushkevych/securitydevices/commonmodels/device/device.proto";
 
 message DeleteDeviceRequest {
-  commonmodels.device.DeviceRequest request = 1;
+  commonmodels.device.DeleteDeviceRequest request = 1;
 }
 
 message DeleteDeviceResponse {
-  commonmodels.device.DeviceResponse response = 1;
+  commonmodels.device.DeleteDeviceResponse response = 1;
 }

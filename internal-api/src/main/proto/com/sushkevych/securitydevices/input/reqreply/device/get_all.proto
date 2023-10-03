@@ -7,9 +7,9 @@ option java_multiple_files = true;
 import "com/sushkevych/securitydevices/commonmodels/device/device.proto";
 
 message GetAllDeviceRequest {
-  commonmodels.device.DeviceRequest request = 1;
+  commonmodels.device.GetAllDevicesRequest request = 1;
 }
 
 message GetAllDeviceResponse {
-  commonmodels.device.DeviceResponse response = 1;
+  commonmodels.device.GetAllDevicesResponse response = 1;
 }

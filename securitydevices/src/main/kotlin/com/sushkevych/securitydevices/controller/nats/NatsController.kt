@@ -13,5 +13,4 @@ interface NatsController<RequestT : GeneratedMessageV3, ResponseT : GeneratedMes
     val parser: Parser<RequestT>
 
     fun handle(request: RequestT): ResponseT
-
 }
