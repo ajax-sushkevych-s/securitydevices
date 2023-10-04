@@ -2,6 +2,8 @@ package com.sushkevych.securitydevices
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.Parser
 import com.sushkevych.internalapi.NatsSubject
 import com.sushkevych.securitydevices.commonmodels.device.Device
 import com.sushkevych.securitydevices.commonmodels.device.DeviceList
@@ -54,12 +56,11 @@ class NatsControllersTest {
         }.build()
 
         // when
-        val requestWithTimeout = natsConnection.requestWithTimeout(
+        val actual = doRequest(
             NatsSubject.Device.GET_BY_ID,
-            request.toByteArray(),
-            Duration.ofMillis(10000)
+            request,
+            GetByIdDeviceResponse.parser()
         )
-        val actual = GetByIdDeviceResponse.parseFrom(requestWithTimeout.get().data)
 
         // then
         assertThat(actual).isEqualTo(expectedResponse)
@@ -79,12 +80,11 @@ class NatsControllersTest {
         }.build()
 
         // when
-        val requestWithTimeout = natsConnection.requestWithTimeout(
+        val actual = doRequest(
             NatsSubject.Device.GET_ALL,
-            request.toByteArray(),
-            Duration.ofMillis(10000)
+            request,
+            GetAllDevicesResponse.parser()
         )
-        val actual = GetAllDevicesResponse.parseFrom(requestWithTimeout.get().data)
 
         // then
         assertThat(actual).isEqualTo(expectedResponse)
@@ -102,12 +102,11 @@ class NatsControllersTest {
         }.build()
 
         // when
-        val requestWithTimeout = natsConnection.requestWithTimeout(
+        val actual = doRequest(
             NatsSubject.Device.DELETE,
-            request.toByteArray(),
-            Duration.ofMillis(10000)
+            request,
+            DeleteDeviceResponse.parser()
         )
-        val actual = DeleteDeviceResponse.parseFrom(requestWithTimeout.get().data)
 
         // then
         assertThat(actual).isEqualTo(expectedResponse)
@@ -125,12 +124,11 @@ class NatsControllersTest {
         }.build()
 
         // when
-        val requestWithTimeout = natsConnection.requestWithTimeout(
+        val actual = doRequest(
             NatsSubject.Device.CREATE,
-            request.toByteArray(),
-            Duration.ofMillis(10000)
+            request,
+            CreateDeviceResponse.parser()
         )
-        val actual = CreateDeviceResponse.parseFrom(requestWithTimeout.get().data)
 
         // then
         assertThat(actual).isEqualTo(expectedResponse)
@@ -154,14 +152,26 @@ class NatsControllersTest {
         }.build()
 
         // when
-        val requestWithTimeout = natsConnection.requestWithTimeout(
+        val actual = doRequest(
             NatsSubject.Device.UPDATE,
-            request.toByteArray(),
-            Duration.ofMillis(10000)
+            request,
+            UpdateDeviceResponse.parser()
         )
-        val actual = UpdateDeviceResponse.parseFrom(requestWithTimeout.get().data)
 
         // then
         assertThat(actual).isEqualTo(expectedResponse)
+    }
+
+    private fun <RequestT : GeneratedMessageV3, ResponseT : GeneratedMessageV3> doRequest(
+        subject: String,
+        payload: RequestT,
+        parser: Parser<ResponseT>,
+    ): ResponseT {
+        val response = natsConnection.requestWithTimeout(
+            subject,
+            payload.toByteArray(),
+            Duration.ofSeconds(10L)
+        )
+        return parser.parseFrom(response.get().data)
     }
 }
