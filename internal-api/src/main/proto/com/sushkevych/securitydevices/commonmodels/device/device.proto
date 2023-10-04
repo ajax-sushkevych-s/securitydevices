@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package com.sushkevych.securitydevices.commonmodels.device;
+
+option java_multiple_files = true;
+
+message DeviceAttribute {
+  string attributeType = 1;
+  string attributeValue = 2;
+}
+
+message Device {
+  optional string id = 1;
+  string name = 2;
+  string description = 3;
+  string type = 4;
+  repeated DeviceAttribute attributes = 5;
+}
+
+message DeviceList {
+  repeated Device devices = 1;
+}

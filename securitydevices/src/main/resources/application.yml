@@ -1,0 +1,8 @@
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  data:
+    mongodb:
+      uri: mongodb://root:root@mongo-security-devices:27017/mongo-db?authSource=admin
+nats:
+  url: "nats://nats-security-devices:4222"
