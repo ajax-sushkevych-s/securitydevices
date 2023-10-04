@@ -9,6 +9,7 @@ import com.sushkevych.securitydevices.commonmodels.device.Device
 import com.sushkevych.securitydevices.commonmodels.device.DeviceList
 import com.sushkevych.securitydevices.dto.response.toProtoDevice
 import com.sushkevych.securitydevices.dto.response.toResponse
+import com.sushkevych.securitydevices.model.MongoDevice
 import com.sushkevych.securitydevices.repository.DeviceRepository
 import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceRequest
 import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceResponse
@@ -21,9 +22,13 @@ import com.sushkevych.securitydevices.request.device.get_by_id.proto.GetByIdDevi
 import com.sushkevych.securitydevices.request.device.update.proto.UpdateDeviceRequest
 import com.sushkevych.securitydevices.request.device.update.proto.UpdateDeviceResponse
 import io.nats.client.Connection
+import org.bson.types.ObjectId
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.core.remove
 import org.springframework.test.context.ActiveProfiles
 import java.time.Duration
 
@@ -35,40 +40,59 @@ class NatsControllersTest {
     private lateinit var natsConnection: Connection
 
     @Autowired
+    private lateinit var mongoTemplate: MongoTemplate
+
+    @Autowired
     private lateinit var deviceRepository: DeviceRepository
 
-    private val protoDevice = Device.newBuilder().apply {
-        setId("651be935ab3c731f6cc49364")
-        setName("Test Device")
-        setDescription("Test Description")
-        setType("Test Type")
-        addAllAttributes(emptyList())
-    }.build()
+    @AfterEach
+    fun cleanDB() {
+        mongoTemplate.remove<MongoDevice>()
+    }
 
     @Test
     fun `should return success response for get device by ID`() {
-        // given
-        val deviceId = protoDevice.id
-        val request = GetByIdDeviceRequest.newBuilder().setDeviceId(deviceId).build()
+        // GIVEN
+        val deviceId = "651c6a8763d50fb3f7f1ec7c"
+
+        deviceRepository.save(
+            MongoDevice(
+                ObjectId(deviceId),
+                name = "Test Device",
+                description = "Test Description",
+                type = "Test Type",
+                attributes = emptyList()
+            )
+        )
+
+        val protoDevice = Device.newBuilder().apply {
+            setId(deviceId)
+            setName("Test Device")
+            setDescription("Test Description")
+            setType("Test Type")
+            addAllAttributes(emptyList())
+        }.build()
+
+        val request = GetByIdDeviceRequest.newBuilder().setDeviceId(protoDevice.id).build()
 
         val expectedResponse = GetByIdDeviceResponse.newBuilder().apply {
             successBuilder.setDevice(protoDevice)
         }.build()
 
-        // when
+        // WHEN
         val actual = doRequest(
             NatsSubject.Device.GET_BY_ID,
             request,
             GetByIdDeviceResponse.parser()
         )
 
-        // then
+        // THEN
         assertThat(actual).isEqualTo(expectedResponse)
     }
 
     @Test
     fun `should return success response for get all devices`() {
-        // given
+        // GIVEN
         val request = GetAllDevicesRequest.newBuilder().build()
 
         val protoDeviceList = deviceRepository.findAll().map { it.toResponse().toProtoDevice() }
@@ -79,42 +103,62 @@ class NatsControllersTest {
             )
         }.build()
 
-        // when
+        // WHEN
         val actual = doRequest(
             NatsSubject.Device.GET_ALL,
             request,
             GetAllDevicesResponse.parser()
         )
 
-        // then
+        // THEN
         assertThat(actual).isEqualTo(expectedResponse)
     }
 
     @Test
     fun `should return success response for delete device`() {
-        // given
+        // GIVEN
+        val deviceId = "651c6a8763d50fb3f7f1ec5d"
+
+        deviceRepository.save(
+            MongoDevice(
+                id = ObjectId(deviceId),
+                name = "Deleted Device",
+                description = "Deleted Description",
+                type = "Deleted Type",
+                attributes = emptyList()
+            )
+        )
+
         val request = DeleteDeviceRequest.newBuilder().apply {
-            setDeviceId(protoDevice.id)
+            setDeviceId(deviceId)
         }.build()
 
         val expectedResponse = DeleteDeviceResponse.newBuilder().apply {
             successBuilder.build()
         }.build()
 
-        // when
+        // WHEN
         val actual = doRequest(
             NatsSubject.Device.DELETE,
             request,
             DeleteDeviceResponse.parser()
         )
 
-        // then
+        // THEN
         assertThat(actual).isEqualTo(expectedResponse)
     }
 
     @Test
     fun `should return success response for create device`() {
-        // given
+        // GIVEN
+        val protoDevice = Device.newBuilder().apply {
+            setId("651c6a8763d50fb3f7f1ce99")
+            setName("Created Device")
+            setDescription("Created Description")
+            setType("Created Type")
+            addAllAttributes(emptyList())
+        }.build()
+
         val request = CreateDeviceRequest.newBuilder().apply {
             setDevice(protoDevice)
         }.build()
@@ -123,42 +167,56 @@ class NatsControllersTest {
             successBuilder.setDevice(protoDevice)
         }.build()
 
-        // when
+        // WHEN
         val actual = doRequest(
             NatsSubject.Device.CREATE,
             request,
             CreateDeviceResponse.parser()
         )
 
-        // then
+        // THEN
         assertThat(actual).isEqualTo(expectedResponse)
     }
 
     @Test
     fun `should return success response for update device`() {
-        // given
-        val updatedProtoDevice = protoDevice.toBuilder().apply {
+        // GIVEN
+        val deviceId = "651c6a8763d50fb3f7f1ec11"
+
+        deviceRepository.save(
+            MongoDevice(
+                id = ObjectId(deviceId),
+                name = "Device",
+                description = "Description",
+                type = "Type",
+                attributes = emptyList()
+            )
+        )
+
+        val updatedProtoDevice = Device.newBuilder().apply {
             setName("Updated Test Device")
             setDescription("Updated Test Description")
             setType("Updated Test Type")
+            addAllAttributes(emptyList())
         }.build()
+
         val request = UpdateDeviceRequest.newBuilder().apply {
-            setDeviceId(protoDevice.id)
+            setDeviceId(deviceId)
             setDevice(updatedProtoDevice)
         }.build()
 
         val expectedResponse = UpdateDeviceResponse.newBuilder().apply {
-            successBuilder.setDevice(updatedProtoDevice)
+            successBuilder.setDevice(updatedProtoDevice.toBuilder().setId(deviceId).build())
         }.build()
 
-        // when
+        // WHEN
         val actual = doRequest(
             NatsSubject.Device.UPDATE,
             request,
             UpdateDeviceResponse.parser()
         )
 
-        // then
+        // THEN
         assertThat(actual).isEqualTo(expectedResponse)
     }
 

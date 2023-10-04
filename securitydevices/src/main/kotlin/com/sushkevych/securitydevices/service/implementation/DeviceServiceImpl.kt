@@ -26,7 +26,7 @@ class DeviceServiceImpl(private val deviceRepository: DeviceRepository) : Device
 
     override fun updateDevice(deviceId: String, deviceRequest: DeviceRequest): DeviceResponse {
         val existingDevice = getDeviceById(deviceId)
-        val updatedDevice = deviceRequest.toEntity().copy(id = ObjectId(existingDevice.id))
+        val updatedDevice = deviceRequest.copy(id = existingDevice.id).toEntity()
         deviceRepository.save(updatedDevice)
         return updatedDevice.toResponse()
     }

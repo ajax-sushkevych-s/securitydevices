@@ -10,7 +10,7 @@ message DeviceAttribute {
 }
 
 message Device {
-  string id = 1;
+  optional string id = 1;
   string name = 2;
   string description = 3;
   string type = 4;

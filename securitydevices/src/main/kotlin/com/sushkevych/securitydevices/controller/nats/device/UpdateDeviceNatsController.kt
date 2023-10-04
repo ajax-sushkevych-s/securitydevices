@@ -23,9 +23,7 @@ class UpdateDeviceNatsController(
 
     override fun handle(request: UpdateDeviceRequest): UpdateDeviceResponse = runCatching {
         val device = request.device.toDeviceRequest()
-        val updatedDevice = device.id?.let { deviceId ->
-            deviceService.updateDevice(deviceId, device)
-        } ?: throw IllegalArgumentException("Device ID is null")
+        val updatedDevice = deviceService.updateDevice(request.deviceId, device)
         buildSuccessResponse(updatedDevice.toProtoDevice())
     }.getOrElse { exception ->
         buildFailureResponse(exception.javaClass.simpleName, exception.toString())
