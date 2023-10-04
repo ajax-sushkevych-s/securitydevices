@@ -53,11 +53,9 @@ class NatsControllersTest {
     @Test
     fun `should return success response for get device by ID`() {
         // GIVEN
-        val deviceId = "651c6a8763d50fb3f7f1ec7c"
-
-        deviceRepository.save(
+        val save = deviceRepository.save(
             MongoDevice(
-                ObjectId(deviceId),
+                ObjectId(),
                 name = "Test Device",
                 description = "Test Description",
                 type = "Test Type",
@@ -65,15 +63,17 @@ class NatsControllersTest {
             )
         )
 
+        val deviceId = save?.id?.toHexString()
+
         val protoDevice = Device.newBuilder().apply {
-            setId(deviceId)
-            setName("Test Device")
-            setDescription("Test Description")
-            setType("Test Type")
+            id = deviceId
+            name = "Test Device"
+            description = "Test Description"
+            type = "Test Type"
             addAllAttributes(emptyList())
         }.build()
 
-        val request = GetByIdDeviceRequest.newBuilder().setDeviceId(protoDevice.id).build()
+        val request = GetByIdDeviceRequest.newBuilder().setDeviceId(deviceId).build()
 
         val expectedResponse = GetByIdDeviceResponse.newBuilder().apply {
             successBuilder.setDevice(protoDevice)
@@ -117,17 +117,17 @@ class NatsControllersTest {
     @Test
     fun `should return success response for delete device`() {
         // GIVEN
-        val deviceId = "651c6a8763d50fb3f7f1ec5d"
-
-        deviceRepository.save(
+        val save = deviceRepository.save(
             MongoDevice(
-                id = ObjectId(deviceId),
+                id = ObjectId(),
                 name = "Deleted Device",
                 description = "Deleted Description",
                 type = "Deleted Type",
                 attributes = emptyList()
             )
         )
+
+        val deviceId = save?.id?.toHexString()
 
         val request = DeleteDeviceRequest.newBuilder().apply {
             setDeviceId(deviceId)
@@ -152,10 +152,10 @@ class NatsControllersTest {
     fun `should return success response for create device`() {
         // GIVEN
         val protoDevice = Device.newBuilder().apply {
-            setId("651c6a8763d50fb3f7f1ce99")
-            setName("Created Device")
-            setDescription("Created Description")
-            setType("Created Type")
+            id = ObjectId().toHexString()
+            name = "Created Device"
+            description = "Created Description"
+            type = "Created Type"
             addAllAttributes(emptyList())
         }.build()
 
@@ -181,11 +181,9 @@ class NatsControllersTest {
     @Test
     fun `should return success response for update device`() {
         // GIVEN
-        val deviceId = "651c6a8763d50fb3f7f1ec11"
-
-        deviceRepository.save(
+        val save = deviceRepository.save(
             MongoDevice(
-                id = ObjectId(deviceId),
+                id = ObjectId(),
                 name = "Device",
                 description = "Description",
                 type = "Type",
@@ -193,10 +191,12 @@ class NatsControllersTest {
             )
         )
 
+        val deviceId = save?.id?.toHexString()
+
         val updatedProtoDevice = Device.newBuilder().apply {
-            setName("Updated Test Device")
-            setDescription("Updated Test Description")
-            setType("Updated Test Type")
+            name = "Updated Test Device"
+            description = "Updated Test Description"
+            type = "Updated Test Type"
             addAllAttributes(emptyList())
         }.build()
 
