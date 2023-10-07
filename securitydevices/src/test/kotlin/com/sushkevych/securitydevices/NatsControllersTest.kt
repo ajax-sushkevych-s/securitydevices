@@ -6,10 +6,10 @@ import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.Parser
 import com.sushkevych.internalapi.NatsSubject
 import com.sushkevych.securitydevices.commonmodels.device.Device
-import com.sushkevych.securitydevices.commonmodels.device.DeviceList
 import com.sushkevych.securitydevices.dto.response.toProtoDevice
 import com.sushkevych.securitydevices.dto.response.toResponse
 import com.sushkevych.securitydevices.model.MongoDevice
+import com.sushkevych.securitydevices.output.device.update.proto.DeviceUpdatedEvent
 import com.sushkevych.securitydevices.repository.DeviceRepository
 import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceRequest
 import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceResponse
@@ -31,6 +31,7 @@ import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.remove
 import org.springframework.test.context.ActiveProfiles
 import java.time.Duration
+import java.util.concurrent.CompletableFuture.runAsync
 
 @SpringBootTest
 @ActiveProfiles("local")
@@ -81,7 +82,7 @@ class NatsControllersTest {
 
         // WHEN
         val actual = doRequest(
-            NatsSubject.Device.GET_BY_ID,
+            NatsSubject.DeviceRequest.GET_BY_ID,
             request,
             GetByIdDeviceResponse.parser()
         )
@@ -93,19 +94,17 @@ class NatsControllersTest {
     @Test
     fun `should return success response for get all devices`() {
         // GIVEN
-        val request = GetAllDevicesRequest.newBuilder().build()
+        val request = GetAllDevicesRequest.getDefaultInstance()
 
         val protoDeviceList = deviceRepository.findAll().map { it.toResponse().toProtoDevice() }
 
         val expectedResponse = GetAllDevicesResponse.newBuilder().apply {
-            successBuilder.setDevices(
-                DeviceList.newBuilder().addAllDevices(protoDeviceList)
-            )
+            successBuilder.addAllDevices(protoDeviceList)
         }.build()
 
         // WHEN
         val actual = doRequest(
-            NatsSubject.Device.GET_ALL,
+            NatsSubject.DeviceRequest.GET_ALL,
             request,
             GetAllDevicesResponse.parser()
         )
@@ -139,7 +138,7 @@ class NatsControllersTest {
 
         // WHEN
         val actual = doRequest(
-            NatsSubject.Device.DELETE,
+            NatsSubject.DeviceRequest.DELETE,
             request,
             DeleteDeviceResponse.parser()
         )
@@ -169,7 +168,7 @@ class NatsControllersTest {
 
         // WHEN
         val actual = doRequest(
-            NatsSubject.Device.CREATE,
+            NatsSubject.DeviceRequest.CREATE,
             request,
             CreateDeviceResponse.parser()
         )
@@ -209,14 +208,34 @@ class NatsControllersTest {
             successBuilder.setDevice(updatedProtoDevice.toBuilder().setId(deviceId).build())
         }.build()
 
+        val expectedUpdatedEventMessage = DeviceUpdatedEvent.newBuilder()
+            .setDeviceName(updatedProtoDevice.name)
+            .setDeviceId(deviceId)
+            .build()
+            .toByteArray()
+
+        val expectedUpdatedEventSubject = "${NatsSubject.DeviceEvent.UPDATED}.${
+            updatedProtoDevice.name.replace(" ", "_")
+                .lowercase()
+        }"
+
+        lateinit var actualUpdatedEventMessage : ByteArray
+
         // WHEN
+        runAsync {
+            actualUpdatedEventMessage = natsConnection.subscribe(expectedUpdatedEventSubject)
+                .nextMessage(Duration.ofSeconds(10L))
+                .data
+        }
+
         val actual = doRequest(
-            NatsSubject.Device.UPDATE,
+            NatsSubject.DeviceRequest.UPDATE,
             request,
             UpdateDeviceResponse.parser()
         )
 
         // THEN
+        assertThat(actualUpdatedEventMessage).isEqualTo(expectedUpdatedEventMessage)
         assertThat(actual).isEqualTo(expectedResponse)
     }
 
