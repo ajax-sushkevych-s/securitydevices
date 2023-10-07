@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package com.sushkevych.securitydevices.output.device.update.proto;
+
+option java_multiple_files = true;
+
+message DeviceUpdatedEvent {
+  string device_name = 1;
+  string device_id = 2;
+}

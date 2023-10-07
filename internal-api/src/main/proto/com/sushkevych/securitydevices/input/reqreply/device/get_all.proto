@@ -17,7 +17,7 @@ message GetAllDevicesResponse {
   }
 
   message Success {
-    commonmodels.device.DeviceList devices = 1;
+    repeated commonmodels.device.Device devices = 1;
   }
 
   message Failure {

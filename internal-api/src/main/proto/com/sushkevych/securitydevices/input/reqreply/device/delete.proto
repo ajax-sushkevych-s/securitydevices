@@ -7,7 +7,7 @@ option java_multiple_files = true;
 import "com/sushkevych/securitydevices/commonmodels/device/device.proto";
 
 message DeleteDeviceRequest {
-  string deviceId = 1;
+  string device_id = 1;
 }
 
 message DeleteDeviceResponse {
