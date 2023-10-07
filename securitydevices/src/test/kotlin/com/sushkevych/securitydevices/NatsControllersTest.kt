@@ -31,7 +31,8 @@ import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.remove
 import org.springframework.test.context.ActiveProfiles
 import java.time.Duration
-import java.util.concurrent.CompletableFuture.runAsync
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 @SpringBootTest
 @ActiveProfiles("local")
@@ -219,14 +220,12 @@ class NatsControllersTest {
                 .lowercase()
         }"
 
-        lateinit var actualUpdatedEventMessage : ByteArray
-
         // WHEN
-        runAsync {
-            actualUpdatedEventMessage = natsConnection.subscribe(expectedUpdatedEventSubject)
-                .nextMessage(Duration.ofSeconds(10L))
-                .data
-        }
+        val requestUpdatedEvent = CompletableFuture<ByteArray>()
+
+        natsConnection.createDispatcher { message ->
+            requestUpdatedEvent.complete(message.data)
+        }.subscribe(expectedUpdatedEventSubject)
 
         val actual = doRequest(
             NatsSubject.DeviceRequest.UPDATE,
@@ -235,7 +234,8 @@ class NatsControllersTest {
         )
 
         // THEN
-        assertThat(actualUpdatedEventMessage).isEqualTo(expectedUpdatedEventMessage)
+        val receivedUpdatedEventMessage = requestUpdatedEvent.get(10, TimeUnit.SECONDS)
+        assertThat(receivedUpdatedEventMessage).isEqualTo(expectedUpdatedEventMessage)
         assertThat(actual).isEqualTo(expectedResponse)
     }
 
