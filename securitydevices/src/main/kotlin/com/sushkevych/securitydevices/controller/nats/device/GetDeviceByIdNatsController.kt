@@ -1,7 +1,7 @@
 package com.sushkevych.securitydevices.controller.nats.device
 
 import com.google.protobuf.Parser
-import com.sushkevych.internalapi.NatsSubject.Device.GET_BY_ID
+import com.sushkevych.internalapi.NatsSubject.DeviceRequest.GET_BY_ID
 import com.sushkevych.securitydevices.commonmodels.device.Device
 import com.sushkevych.securitydevices.controller.nats.NatsController
 import com.sushkevych.securitydevices.dto.response.toProtoDevice
