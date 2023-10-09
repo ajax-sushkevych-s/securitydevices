@@ -5,8 +5,8 @@ package com.sushkevych.securitydevices.commonmodels.device;
 option java_multiple_files = true;
 
 message DeviceAttribute {
-  string attributeType = 1;
-  string attributeValue = 2;
+  string attribute_type = 1;
+  string attribute_value = 2;
 }
 
 message Device {
@@ -15,8 +15,4 @@ message Device {
   string description = 3;
   string type = 4;
   repeated DeviceAttribute attributes = 5;
-}
-
-message DeviceList {
-  repeated Device devices = 1;
 }

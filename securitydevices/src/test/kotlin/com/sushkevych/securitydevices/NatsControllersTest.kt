@@ -6,10 +6,10 @@ import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.Parser
 import com.sushkevych.internalapi.NatsSubject
 import com.sushkevych.securitydevices.commonmodels.device.Device
-import com.sushkevych.securitydevices.commonmodels.device.DeviceList
 import com.sushkevych.securitydevices.dto.response.toProtoDevice
 import com.sushkevych.securitydevices.dto.response.toResponse
 import com.sushkevych.securitydevices.model.MongoDevice
+import com.sushkevych.securitydevices.output.device.update.proto.DeviceUpdatedEvent
 import com.sushkevych.securitydevices.repository.DeviceRepository
 import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceRequest
 import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceResponse
@@ -31,6 +31,8 @@ import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.remove
 import org.springframework.test.context.ActiveProfiles
 import java.time.Duration
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 @SpringBootTest
 @ActiveProfiles("local")
@@ -81,7 +83,7 @@ class NatsControllersTest {
 
         // WHEN
         val actual = doRequest(
-            NatsSubject.Device.GET_BY_ID,
+            NatsSubject.DeviceRequest.GET_BY_ID,
             request,
             GetByIdDeviceResponse.parser()
         )
@@ -93,19 +95,17 @@ class NatsControllersTest {
     @Test
     fun `should return success response for get all devices`() {
         // GIVEN
-        val request = GetAllDevicesRequest.newBuilder().build()
+        val request = GetAllDevicesRequest.getDefaultInstance()
 
         val protoDeviceList = deviceRepository.findAll().map { it.toResponse().toProtoDevice() }
 
         val expectedResponse = GetAllDevicesResponse.newBuilder().apply {
-            successBuilder.setDevices(
-                DeviceList.newBuilder().addAllDevices(protoDeviceList)
-            )
+            successBuilder.addAllDevices(protoDeviceList)
         }.build()
 
         // WHEN
         val actual = doRequest(
-            NatsSubject.Device.GET_ALL,
+            NatsSubject.DeviceRequest.GET_ALL,
             request,
             GetAllDevicesResponse.parser()
         )
@@ -139,7 +139,7 @@ class NatsControllersTest {
 
         // WHEN
         val actual = doRequest(
-            NatsSubject.Device.DELETE,
+            NatsSubject.DeviceRequest.DELETE,
             request,
             DeleteDeviceResponse.parser()
         )
@@ -169,7 +169,7 @@ class NatsControllersTest {
 
         // WHEN
         val actual = doRequest(
-            NatsSubject.Device.CREATE,
+            NatsSubject.DeviceRequest.CREATE,
             request,
             CreateDeviceResponse.parser()
         )
@@ -206,17 +206,33 @@ class NatsControllersTest {
         }.build()
 
         val expectedResponse = UpdateDeviceResponse.newBuilder().apply {
-            successBuilder.setDevice(updatedProtoDevice.toBuilder().setId(deviceId).build())
+            successBuilder
+                .setDevice(updatedProtoDevice.toBuilder().setId(deviceId).build())
         }.build()
 
+        val expectedUpdatedEventMessage = DeviceUpdatedEvent.newBuilder().apply {
+            device = updatedProtoDevice.toBuilder().setId(deviceId).build()
+        }.build().toByteArray()
+
+        val expectedUpdatedEventSubject =
+            "${NatsSubject.DeviceEvent.DEVICE_PREFIX}${deviceId}${NatsSubject.DeviceEvent.UPDATED}"
+
         // WHEN
+        val requestUpdatedEvent = CompletableFuture<ByteArray>()
+
+        natsConnection.createDispatcher { message ->
+            requestUpdatedEvent.complete(message.data)
+        }.subscribe(expectedUpdatedEventSubject)
+
         val actual = doRequest(
-            NatsSubject.Device.UPDATE,
+            NatsSubject.DeviceRequest.UPDATE,
             request,
             UpdateDeviceResponse.parser()
         )
 
         // THEN
+        val receivedUpdatedEventMessage = requestUpdatedEvent.get(10, TimeUnit.SECONDS)
+        assertThat(receivedUpdatedEventMessage).isEqualTo(expectedUpdatedEventMessage)
         assertThat(actual).isEqualTo(expectedResponse)
     }
 

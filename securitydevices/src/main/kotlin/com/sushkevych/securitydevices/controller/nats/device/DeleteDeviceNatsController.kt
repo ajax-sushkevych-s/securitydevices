@@ -1,7 +1,7 @@
 package com.sushkevych.securitydevices.controller.nats.device
 
 import com.google.protobuf.Parser
-import com.sushkevych.internalapi.NatsSubject.Device.DELETE
+import com.sushkevych.internalapi.NatsSubject.DeviceRequest.DELETE
 import com.sushkevych.securitydevices.controller.nats.NatsController
 import com.sushkevych.securitydevices.request.device.delete.proto.DeleteDeviceRequest
 import com.sushkevych.securitydevices.request.device.delete.proto.DeleteDeviceResponse

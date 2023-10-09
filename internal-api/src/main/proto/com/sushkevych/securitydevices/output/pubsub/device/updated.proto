@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package com.sushkevych.securitydevices.output.device.update.proto;
+
+option java_multiple_files = true;
+
+import "com/sushkevych/securitydevices/commonmodels/device/device.proto";
+
+message DeviceUpdatedEvent {
+  commonmodels.device.Device device = 1;
+}

@@ -1,7 +1,7 @@
 package com.sushkevych.securitydevices.controller.nats.device
 
 import com.google.protobuf.Parser
-import com.sushkevych.internalapi.NatsSubject.Device.GET_ALL
+import com.sushkevych.internalapi.NatsSubject.DeviceRequest.GET_ALL
 import com.sushkevych.securitydevices.commonmodels.device.Device
 import com.sushkevych.securitydevices.controller.nats.NatsController
 import com.sushkevych.securitydevices.dto.response.toProtoDevice
@@ -28,9 +28,7 @@ class GetAllDeviceNatsController(
 
     private fun buildSuccessResponse(deviceList: List<Device>): GetAllDevicesResponse =
         GetAllDevicesResponse.newBuilder().apply {
-            successBuilder
-                .devicesBuilder
-                .addAllDevices(deviceList)
+            successBuilder.addAllDevices(deviceList)
         }.build()
 
     private fun buildFailureResponse(exception: String, message: String): GetAllDevicesResponse =

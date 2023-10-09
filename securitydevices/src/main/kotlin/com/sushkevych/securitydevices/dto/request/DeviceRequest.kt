@@ -37,7 +37,11 @@ fun DeviceAttributeRequest.toEntity() = MongoDevice.MongoDeviceAttribute(
 
 fun Device.toDeviceRequest(): DeviceRequest {
     return DeviceRequest(
-        id = this.id,
+        id = if (this.hasId()) {
+            this.id
+        } else {
+            null
+        },
         name = this.name,
         description = this.description,
         type = this.type,
