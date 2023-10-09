@@ -206,19 +206,16 @@ class NatsControllersTest {
         }.build()
 
         val expectedResponse = UpdateDeviceResponse.newBuilder().apply {
-            successBuilder.setDevice(updatedProtoDevice.toBuilder().setId(deviceId).build())
+            successBuilder
+                .setDevice(updatedProtoDevice.toBuilder().setId(deviceId).build())
         }.build()
 
-        val expectedUpdatedEventMessage = DeviceUpdatedEvent.newBuilder()
-            .setDeviceName(updatedProtoDevice.name)
-            .setDeviceId(deviceId)
-            .build()
-            .toByteArray()
+        val expectedUpdatedEventMessage = DeviceUpdatedEvent.newBuilder().apply {
+            device = updatedProtoDevice.toBuilder().setId(deviceId).build()
+        }.build().toByteArray()
 
-        val expectedUpdatedEventSubject = "${NatsSubject.DeviceEvent.UPDATED}.${
-            updatedProtoDevice.name.replace(" ", "_")
-                .lowercase()
-        }"
+        val expectedUpdatedEventSubject =
+            "${NatsSubject.DeviceEvent.DEVICE_PREFIX}${deviceId}${NatsSubject.DeviceEvent.UPDATED}"
 
         // WHEN
         val requestUpdatedEvent = CompletableFuture<ByteArray>()

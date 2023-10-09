@@ -2,6 +2,7 @@ package com.sushkevych.securitydevices.controller.nats.device
 
 import com.google.protobuf.Parser
 import com.sushkevych.internalapi.NatsSubject
+import com.sushkevych.internalapi.NatsSubject.DeviceEvent.DEVICE_PREFIX
 import com.sushkevych.internalapi.NatsSubject.DeviceRequest.UPDATE
 import com.sushkevych.securitydevices.commonmodels.device.Device
 import com.sushkevych.securitydevices.controller.nats.NatsController
@@ -43,14 +44,10 @@ class UpdateDeviceNatsController(
         }.build()
 
     private fun publishUpdatedEvent(updatedDevice: Device) {
-        val updateEventSubject = "${NatsSubject.DeviceEvent.UPDATED}.${
-            updatedDevice.name.replace(" ", "_")
-                .lowercase()
-        }"
+        val updateEventSubject = "${DEVICE_PREFIX}${updatedDevice.id}${NatsSubject.DeviceEvent.UPDATED}"
 
         val eventMessage = DeviceUpdatedEvent.newBuilder().apply {
-            deviceId = updatedDevice.id
-            deviceName = updatedDevice.name
+            device = updatedDevice
         }.build()
 
         connection.publish(updateEventSubject, eventMessage.toByteArray())
