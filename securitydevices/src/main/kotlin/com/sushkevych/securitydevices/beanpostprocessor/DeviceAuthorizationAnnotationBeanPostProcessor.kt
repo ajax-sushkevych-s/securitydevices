@@ -4,13 +4,14 @@ import com.sushkevych.securitydevices.annotation.DeviceAuthorization
 import com.sushkevych.securitydevices.dto.request.UserRequest
 import com.sushkevych.securitydevices.model.MongoDeviceStatus
 import com.sushkevych.securitydevices.repository.DeviceStatusRepository
-import org.bson.types.ObjectId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.BeanPostProcessor
 import org.springframework.cglib.proxy.InvocationHandler
 import org.springframework.cglib.proxy.Proxy
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import java.lang.reflect.Method
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
@@ -44,20 +45,20 @@ class DeviceAuthorizationAnnotationBeanPostProcessor : BeanPostProcessor {
     }
 }
 
-@Suppress("SpreadOperator")
 class DeviceAuthorizationInvocationHandler(
     private val bean: Any,
     private val deviceStatusRepository: DeviceStatusRepository,
     private val originalBean: KClass<*>
 ) : InvocationHandler {
 
+    @Suppress("SpreadOperator")
     override fun invoke(proxy: Any, method: Method, args: Array<out Any>?): Any? {
         val methodParams = args ?: emptyArray()
         val result = method.invoke(bean, *methodParams)
 
         if (args?.any { it is UserRequest } == true && hasDeviceAuthorizationAnnotation(originalBean, method)) {
             val userRequest = args.find { it is UserRequest } as UserRequest
-            createDeviceStatus(userRequest)
+            createDevicesStatus(userRequest).subscribe()
         }
 
         return result
@@ -71,19 +72,25 @@ class DeviceAuthorizationInvocationHandler(
         }
     }
 
-    private fun createDeviceStatus(userRequest: UserRequest) {
-        userRequest.devices
-            .mapNotNull { it.userDeviceId }
-            .filter { userDeviceId -> deviceStatusRepository.findByUserDeviceId(userDeviceId) == null }
-            .forEach { userDeviceId ->
-                val deviceStatus = MongoDeviceStatus(
-                    id = ObjectId(),
-                    userDeviceId = userDeviceId,
-                    status = MongoDeviceStatus.MongoDeviceStatusType.AUTHORIZATION,
-                    batteryLevel = null,
-                    statusDetails = null
-                )
-                deviceStatusRepository.save(deviceStatus)
+    private fun createDevicesStatus(userRequest: UserRequest): Mono<Unit> {
+        return Flux.fromIterable(userRequest.devices)
+            .flatMap { userDeviceRequest ->
+                userDeviceRequest.userDeviceId?.let { getDeviceStatusOrCreateNew(it) } ?: Mono.empty()
             }
+            .then().thenReturn(Unit)
     }
+
+    private fun getDeviceStatusOrCreateNew(userDeviceId: String): Mono<MongoDeviceStatus> =
+        deviceStatusRepository.findByUserDeviceId(userDeviceId)
+            .switchIfEmpty(createNewDeviceStatus(userDeviceId))
+
+    private fun createNewDeviceStatus(userDeviceId: String): Mono<MongoDeviceStatus> =
+        deviceStatusRepository.save(
+            MongoDeviceStatus(
+                userDeviceId = userDeviceId,
+                status = MongoDeviceStatus.MongoDeviceStatusType.AUTHORIZATION,
+                batteryLevel = null,
+                statusDetails = null
+            )
+        )
 }

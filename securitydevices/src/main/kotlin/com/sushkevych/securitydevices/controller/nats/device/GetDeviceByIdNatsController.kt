@@ -10,6 +10,8 @@ import com.sushkevych.securitydevices.request.device.get_by_id.proto.GetByIdDevi
 import com.sushkevych.securitydevices.service.DeviceService
 import io.nats.client.Connection
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 @Component
 class GetDeviceByIdNatsController(
@@ -20,12 +22,16 @@ class GetDeviceByIdNatsController(
     override val subject = GET_BY_ID
     override val parser: Parser<GetByIdDeviceRequest> = GetByIdDeviceRequest.parser()
 
-    override fun handle(request: GetByIdDeviceRequest): GetByIdDeviceResponse = runCatching {
+    override fun handle(request: GetByIdDeviceRequest): Mono<GetByIdDeviceResponse> {
         val deviceId = request.deviceId
-        val getDeviceById = deviceService.getDeviceById(deviceId)
-        buildSuccessResponse(getDeviceById.toProtoDevice())
-    }.getOrElse { exception ->
-        buildFailureResponse(exception.javaClass.simpleName, exception.toString())
+        return deviceService.getDeviceById(deviceId)
+            .map { device -> buildSuccessResponse(device.toProtoDevice()) }
+            .onErrorResume { exception ->
+                buildFailureResponse(
+                    exception.javaClass.simpleName,
+                    exception.toString()
+                ).toMono()
+            }
     }
 
     private fun buildSuccessResponse(device: Device): GetByIdDeviceResponse =

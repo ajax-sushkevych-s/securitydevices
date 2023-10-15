@@ -198,7 +198,7 @@ db.user.insert([
         {
             "username": "User3",
             "email": "user3@example.com",
-            "mobile_number": "+3333333333",
+            "mobileNumber": "+3333333333",
             "password": "hashed_password",
             "devices": [
                 {

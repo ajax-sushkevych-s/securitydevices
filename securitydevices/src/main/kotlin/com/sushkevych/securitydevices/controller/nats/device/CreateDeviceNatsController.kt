@@ -11,6 +11,8 @@ import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceRe
 import com.sushkevych.securitydevices.service.DeviceService
 import io.nats.client.Connection
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 @Component
 class CreateDeviceNatsController(
@@ -21,12 +23,16 @@ class CreateDeviceNatsController(
     override val subject = CREATE
     override val parser: Parser<CreateDeviceRequest> = CreateDeviceRequest.parser()
 
-    override fun handle(request: CreateDeviceRequest): CreateDeviceResponse = runCatching {
+    override fun handle(request: CreateDeviceRequest): Mono<CreateDeviceResponse> {
         val device = request.device.toDeviceRequest()
-        val saveDevice = deviceService.saveDevice(device)
-        buildSuccessResponse(saveDevice.toProtoDevice())
-    }.getOrElse { exception ->
-        buildFailureResponse(exception.javaClass.simpleName, exception.toString())
+        return deviceService.saveDevice(device)
+            .map { deviceResponse -> buildSuccessResponse(deviceResponse.toProtoDevice()) }
+            .onErrorResume { exception ->
+                buildFailureResponse(
+                    exception.javaClass.simpleName,
+                    exception.toString()
+                ).toMono()
+            }
     }
 
     private fun buildSuccessResponse(device: Device): CreateDeviceResponse =

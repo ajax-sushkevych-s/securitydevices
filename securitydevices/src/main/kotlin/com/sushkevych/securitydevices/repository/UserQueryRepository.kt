@@ -1,68 +1,91 @@
 package com.sushkevych.securitydevices.repository
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.mongodb.client.result.DeleteResult
 import com.sushkevych.securitydevices.model.MongoDeviceStatus
 import com.sushkevych.securitydevices.model.MongoUser
 import org.bson.types.ObjectId
 import org.springframework.data.domain.Sort
-import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.aggregation.Aggregation
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation
 import org.springframework.data.mongodb.core.aggregation.TypedAggregation
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Repository
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 @Repository
 @Suppress("TooManyFunctions")
-class UserQueryRepository(private val mongoTemplate: MongoTemplate, private val objectMapper: ObjectMapper) :
+class UserQueryRepository(
+    private val reactiveMongoTemplate: ReactiveMongoTemplate,
+    private val objectMapper: ObjectMapper
+) :
     UserRepository {
-    override fun getUserById(id: ObjectId): MongoUser? {
-        val query = Query().addCriteria(Criteria.where("id").`is`(id))
-        return mongoTemplate.findOne(query, MongoUser::class.java)
+
+    override fun getUserById(id: ObjectId): Mono<MongoUser> =
+        reactiveMongoTemplate.findOne(Query().addCriteria(Criteria.where("id").`is`(id)), MongoUser::class.java)
+
+    override fun findAll(): Flux<MongoUser> = reactiveMongoTemplate.findAll(MongoUser::class.java)
+
+    override fun save(user: MongoUser): Mono<MongoUser> = reactiveMongoTemplate.save(user)
+
+    override fun update(user: MongoUser): Mono<MongoUser> {
+        val query = Query(Criteria.where("id").`is`(user.id))
+        val update = Update()
+            .set("username", user.username)
+            .set("email", user.email)
+            .set("mobileNumber", user.mobileNumber)
+            .set("password", user.password)
+            .set("devices", user.devices)
+        return reactiveMongoTemplate.updateFirst(query, update, MongoUser::class.java)
+            .flatMap { if (it.modifiedCount > 0) user.toMono() else Mono.empty() }
     }
 
-    override fun findAll(): List<MongoUser> = mongoTemplate.findAll(MongoUser::class.java)
-
-    override fun save(user: MongoUser): MongoUser = mongoTemplate.save(user)
-
-    override fun deleteById(userId: ObjectId) {
-        mongoTemplate.findAndRemove(
-            Query(Criteria.where("id").`is`(userId)), MongoUser::class.java
-        )?.let { deleteDeviceStatusForOwnerDevices(it) }
+    override fun deleteById(userId: ObjectId): Mono<Unit> {
+        return reactiveMongoTemplate.findAndRemove(
+            Query(Criteria.where("id").`is`(userId)),
+            MongoUser::class.java
+        ).flatMap { deletedUser ->
+            deleteDeviceStatusForOwnerDevices(deletedUser)
+        }.thenReturn(Unit)
     }
 
-    private fun deleteDeviceStatusForOwnerDevices(userToDelete: MongoUser) {
+    private fun deleteDeviceStatusForOwnerDevices(userToDelete: MongoUser): Mono<DeleteResult> {
         val devicesToRemove: List<String?> = userToDelete.devices.asSequence()
             .filter { it?.role == MongoUser.MongoUserRole.OWNER }
             .map { it?.userDeviceId?.toHexString() }
             .toList()
-        mongoTemplate.remove(
-            Query(Criteria.where("user_device_id").`in`(devicesToRemove)), MongoDeviceStatus::class.java
-        )
+
+        val query = Query(Criteria.where("user_device_id").`in`(devicesToRemove))
+
+        return reactiveMongoTemplate.remove(query, MongoDeviceStatus::class.java)
     }
 
-    override fun getUserByUserName(username: String): MongoUser? {
+    override fun getUserByUserName(username: String): Mono<MongoUser> {
         val query = Query(Criteria.where("username").`is`(username))
-        return mongoTemplate.findOne(query, MongoUser::class.java)
+        return reactiveMongoTemplate.findOne(query, MongoUser::class.java)
     }
 
-    override fun findUsersWithSpecificDevice(deviceId: ObjectId): List<MongoUser> {
+    override fun findUsersWithSpecificDevice(deviceId: ObjectId): Flux<MongoUser> {
         val query = Query(Criteria.where("devices.deviceId").`is`(deviceId))
-        return mongoTemplate.find(query, MongoUser::class.java)
+        return reactiveMongoTemplate.find(query, MongoUser::class.java)
     }
 
-    override fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): List<MongoUser> {
+    override fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): Flux<MongoUser> {
         val query = Query(Criteria.where("devices.role").`is`(role))
-        return mongoTemplate.find(query, MongoUser::class.java)
+        return reactiveMongoTemplate.find(query, MongoUser::class.java)
     }
 
-    override fun findUsersWithoutDevices(): List<MongoUser> {
+    override fun findUsersWithoutDevices(): Flux<MongoUser> {
         val query = Query(Criteria.where("devices").`is`(emptyList<Any>()))
-        return mongoTemplate.find(query, MongoUser::class.java)
+        return reactiveMongoTemplate.find(query, MongoUser::class.java)
     }
 
-    override fun getUsersByOffsetPagination(offset: Int, limit: Int): Pair<List<MongoUser>, Long> {
+    override fun getUsersByOffsetPagination(offset: Int, limit: Int): Mono<Pair<List<MongoUser>, Long>> {
         val aggregation = TypedAggregation.newAggregation(
             MongoUser::class.java,
             Aggregation.skip(offset.toLong()),
@@ -75,7 +98,7 @@ class UserQueryRepository(private val mongoTemplate: MongoTemplate, private val 
         return getUsersAndTotalCountFromAggregationResult(aggregation)
     }
 
-    override fun getUsersByCursorBasedPagination(pageSize: Int, cursor: String?): Pair<List<MongoUser>, Long> {
+    override fun getUsersByCursorBasedPagination(pageSize: Int, cursor: String?): Mono<Pair<List<MongoUser>, Long>> {
         var matchByCursor: AggregationOperation = Aggregation.match(Criteria())
         cursor?.let {
             matchByCursor = Aggregation.match(Criteria.where("_id").gt(ObjectId(cursor)))
@@ -96,19 +119,21 @@ class UserQueryRepository(private val mongoTemplate: MongoTemplate, private val 
     @Suppress("UNCHECKED_CAST")
     private fun getUsersAndTotalCountFromAggregationResult(
         aggregation: TypedAggregation<MongoUser>
-    ): Pair<List<MongoUser>, Long> {
-        val results = mongoTemplate.aggregate(aggregation, Map::class.java)
+    ): Mono<Pair<List<MongoUser>, Long>> {
+        return reactiveMongoTemplate.aggregate(aggregation, Map::class.java)
+            .collectList()
+            .flatMap { result ->
+                val pagedUsers = result.getOrNull(0)?.get("users") as? List<LinkedHashMap<*, *>>
+                val users = pagedUsers?.takeIf { it.isNotEmpty() }?.map { userMap ->
+                    val modifiedUserMap = modifyObjectIdToHexId(userMap)
+                    objectMapper.convertValue(modifiedUserMap, MongoUser::class.java)
+                } ?: emptyList()
 
-        val pagedUsers = results.getMappedResults().first()["users"] as List<LinkedHashMap<*, *>>
-        val users = pagedUsers.map { userMap ->
-            val modifiedUserMap = modifyObjectIdToHexId(userMap)
-            objectMapper.convertValue(modifiedUserMap, MongoUser::class.java)
-        }
+                val totalCount = result.getOrNull(0)?.get("totalCount") as? List<LinkedHashMap<*, *>>
+                val totalCountValue = totalCount?.getOrNull(0)?.get("totalCount") as? Int ?: 0
 
-        val totalCountList = results.mappedResults.first()["totalCount"] as? List<LinkedHashMap<*, *>>
-        val totalCount = ((totalCountList?.firstOrNull()?.get("totalCount") as? Int?)?.toLong()) ?: 0
-
-        return Pair(users, totalCount)
+                Pair(users, totalCountValue.toLong()).toMono()
+            }
     }
 
     @Suppress("UNCHECKED_CAST")

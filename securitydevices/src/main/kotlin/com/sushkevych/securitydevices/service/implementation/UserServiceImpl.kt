@@ -13,55 +13,64 @@ import com.sushkevych.securitydevices.repository.UserRepository
 import com.sushkevych.securitydevices.service.UserService
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 @Service
 class UserServiceImpl(private val userRepository: UserRepository) : UserService {
-    override fun getUserById(userId: String): UserResponse = userRepository.getUserById(ObjectId(userId))
-        ?.toResponse() ?: throw NotFoundException(message = "User with ID $userId not found")
+    override fun getUserById(userId: String): Mono<UserResponse> =
+        userRepository.getUserById(ObjectId(userId))
+            .switchIfEmpty(Mono.error(NotFoundException(message = "User with ID $userId not found")))
+            .map { it.toResponse() }
 
-    override fun findAllUsers(): List<UserResponse> = userRepository.findAll().map { it.toResponse() }
-
-    @DeviceAuthorization
-    override fun saveUser(userRequest: UserRequest): UserResponse {
-        val user = userRequest.toEntity()
-        userRepository.save(user)
-        return user.toResponse()
-    }
+    override fun findAllUsers(): Mono<List<UserResponse>> =
+        userRepository.findAll()
+            .map { it.toResponse() }
+            .collectList()
 
     @DeviceAuthorization
-    override fun updateUser(id: String, userRequest: UserRequest): UserResponse {
-        val existingUser = getUserById(id)
-        existingUser.let {
-            val updatedUser = userRequest.toEntity().copy(id = ObjectId(it.id))
-            userRepository.save(updatedUser)
-            return updatedUser.toResponse()
-        }
-    }
+    override fun saveUser(userRequest: UserRequest): Mono<UserResponse> =
+        userRepository.save(userRequest.toEntity())
+            .map { it.toResponse() }
+
+    @DeviceAuthorization
+    override fun updateUser(userRequest: UserRequest): Mono<UserResponse> =
+        userRepository.update(userRequest.toEntity())
+            .switchIfEmpty(Mono.error(NotFoundException(message = "User with ID ${userRequest.id} not found")))
+            .map { it.toResponse() }
 
     override fun deleteUser(userId: String) = userRepository.deleteById(ObjectId(userId))
 
-    override fun findUsersWithoutDevices(): List<UserResponse> =
-        userRepository.findUsersWithoutDevices().map { it.toResponse() }
+    override fun findUsersWithoutDevices(): Mono<List<UserResponse>> =
+        userRepository.findUsersWithoutDevices()
+            .map { it.toResponse() }
+            .collectList()
 
-    override fun findsUsersWithSpecificDevice(deviceId: String): List<UserResponse> =
-        userRepository.findUsersWithSpecificDevice(ObjectId(deviceId)).map { it.toResponse() }
+    override fun findsUsersWithSpecificDevice(deviceId: String): Mono<List<UserResponse>> =
+        userRepository.findUsersWithSpecificDevice(ObjectId(deviceId))
+            .map { it.toResponse() }
+            .collectList()
 
-    override fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): List<UserResponse> =
-        userRepository.findUsersWithSpecificRole(role).map { it.toResponse() }
+    override fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): Mono<List<UserResponse>> =
+        userRepository.findUsersWithSpecificRole(role)
+            .map { it.toResponse() }
+            .collectList()
 
-    override fun getUsersByOffsetPagination(offset: Int, limit: Int): OffsetPaginateResponse {
-        val usersByOffsetPagination = userRepository.getUsersByOffsetPagination(offset, limit)
-        val mappedUsersToResponse = usersByOffsetPagination.first.map { it.toResponse() }
-        val totalDocuments = usersByOffsetPagination.second
-        return OffsetPaginateResponse(mappedUsersToResponse, totalDocuments)
-    }
+    override fun getUsersByOffsetPagination(offset: Int, limit: Int): Mono<OffsetPaginateResponse> =
+        userRepository.getUsersByOffsetPagination(offset, limit)
+            .flatMap { usersByOffsetPagination ->
+                val mappedUsersToResponse = usersByOffsetPagination.first.map { it.toResponse() }
+                val totalDocuments = usersByOffsetPagination.second
+                OffsetPaginateResponse(mappedUsersToResponse, totalDocuments).toMono()
+            }
 
-    override fun getUsersByCursorBasedPagination(pageSize: Int, cursor: String?): CursorPaginateResponse {
-        val usersByCursorBasedPagination = userRepository.getUsersByCursorBasedPagination(pageSize, cursor)
-        val mappedUsersToResponse = usersByCursorBasedPagination.first.map { it.toResponse() }
-        val totalDocuments = usersByCursorBasedPagination.second
-        val nextCursor =
-            if (mappedUsersToResponse.size == pageSize) mappedUsersToResponse.last().id.toString() else null
-        return CursorPaginateResponse(mappedUsersToResponse, nextCursor, totalDocuments)
-    }
+    override fun getUsersByCursorBasedPagination(pageSize: Int, cursor: String?): Mono<CursorPaginateResponse> =
+        userRepository.getUsersByCursorBasedPagination(pageSize, cursor)
+            .flatMap { usersByCursorBasedPagination ->
+                val mappedUsersToResponse = usersByCursorBasedPagination.first.map { it.toResponse() }
+                val totalDocuments = usersByCursorBasedPagination.second
+                val nextCursor =
+                    if (mappedUsersToResponse.size == pageSize) mappedUsersToResponse.last().id.toString() else null
+                CursorPaginateResponse(mappedUsersToResponse, nextCursor, totalDocuments).toMono()
+            }
 }

@@ -1,8 +1,8 @@
 package com.sushkevych.securitydevices.controller.nats.device
 
 import com.google.protobuf.Parser
-import com.sushkevych.internalapi.NatsSubject
-import com.sushkevych.internalapi.NatsSubject.DeviceEvent.DEVICE_PREFIX
+import com.sushkevych.internalapi.NatsSubject.DeviceEvent.UPDATED
+import com.sushkevych.internalapi.NatsSubject.DeviceEvent.createDeviceEventSubject
 import com.sushkevych.internalapi.NatsSubject.DeviceRequest.UPDATE
 import com.sushkevych.securitydevices.commonmodels.device.Device
 import com.sushkevych.securitydevices.controller.nats.NatsController
@@ -14,6 +14,7 @@ import com.sushkevych.securitydevices.request.device.update.proto.UpdateDeviceRe
 import com.sushkevych.securitydevices.service.DeviceService
 import io.nats.client.Connection
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
 
 @Component
 class UpdateDeviceNatsController(
@@ -24,13 +25,17 @@ class UpdateDeviceNatsController(
     override val subject = UPDATE
     override val parser: Parser<UpdateDeviceRequest> = UpdateDeviceRequest.parser()
 
-    override fun handle(request: UpdateDeviceRequest): UpdateDeviceResponse = runCatching {
+    override fun handle(request: UpdateDeviceRequest): Mono<UpdateDeviceResponse> {
         val device = request.device.toDeviceRequest()
-        val updatedDevice = deviceService.updateDevice(request.deviceId, device).toProtoDevice()
-        publishUpdatedEvent(updatedDevice)
-        buildSuccessResponse(updatedDevice)
-    }.getOrElse { exception ->
-        buildFailureResponse(exception.javaClass.simpleName, exception.toString())
+        return deviceService.updateDevice(device)
+            .map { updatedDevice ->
+                val updatedDeviceResponse = updatedDevice.toProtoDevice()
+                publishUpdatedEvent(updatedDeviceResponse)
+                buildSuccessResponse(updatedDeviceResponse)
+            }
+            .onErrorResume { exception ->
+                Mono.just(buildFailureResponse(exception.javaClass.simpleName, exception.toString()))
+            }
     }
 
     private fun buildSuccessResponse(device: Device): UpdateDeviceResponse =
@@ -44,7 +49,7 @@ class UpdateDeviceNatsController(
         }.build()
 
     private fun publishUpdatedEvent(updatedDevice: Device) {
-        val updateEventSubject = "${DEVICE_PREFIX}${updatedDevice.id}${NatsSubject.DeviceEvent.UPDATED}"
+        val updateEventSubject = createDeviceEventSubject(updatedDevice.id, UPDATED)
 
         val eventMessage = DeviceUpdatedEvent.newBuilder().apply {
             device = updatedDevice

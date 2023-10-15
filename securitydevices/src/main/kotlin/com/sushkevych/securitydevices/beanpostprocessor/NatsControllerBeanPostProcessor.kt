@@ -20,8 +20,9 @@ class NatsControllerBeanPostProcessor(private val connection: Connection) : Bean
             initializeNatsController(controller: NatsController<RequestT, ResponseT>, connection: Connection) {
         connection.createDispatcher { message ->
             val parsedData = controller.parser.parseFrom(message.data)
-            val response = controller.handle(parsedData)
-            connection.publish(message.replyTo, response.toByteArray())
+            controller.handle(parsedData).subscribe { response ->
+                connection.publish(message.replyTo, response.toByteArray())
+            }
         }.apply { subscribe(controller.subject) }
     }
 }
