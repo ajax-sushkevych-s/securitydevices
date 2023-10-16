@@ -2,16 +2,19 @@ package com.sushkevych.securitydevices.handlers
 
 import com.sushkevych.securitydevices.exception.NotFoundException
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 import java.time.LocalDateTime
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun handleValidationException(ex: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleValidationException(ex: MethodArgumentNotValidException): Mono<ErrorResponse> {
         val errorResponse = ErrorResponse(
             LocalDateTime.now(),
             HttpStatus.BAD_REQUEST.value(),
@@ -20,18 +23,19 @@ class GlobalExceptionHandler {
                 "${it.defaultMessage}"
             }
         )
-        return ResponseEntity.badRequest().body(errorResponse)
+        return errorResponse.toMono()
     }
 
     @ExceptionHandler(NotFoundException::class)
-    fun handleNotFoundException(ex: NotFoundException): ResponseEntity<ErrorResponse> {
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    fun handleNotFoundException(ex: NotFoundException): Mono<ErrorResponse> {
         val errorResponse = ErrorResponse(
             LocalDateTime.now(),
             HttpStatus.NOT_FOUND.value(),
             "Not Found",
             ex.message
         )
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse)
+        return errorResponse.toMono()
     }
 }
 

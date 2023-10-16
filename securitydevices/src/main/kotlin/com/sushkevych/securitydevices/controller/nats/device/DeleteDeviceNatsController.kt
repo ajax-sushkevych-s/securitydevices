@@ -8,6 +8,8 @@ import com.sushkevych.securitydevices.request.device.delete.proto.DeleteDeviceRe
 import com.sushkevych.securitydevices.service.DeviceService
 import io.nats.client.Connection
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 @Component
 class DeleteDeviceNatsController(
@@ -18,12 +20,16 @@ class DeleteDeviceNatsController(
     override val subject = DELETE
     override val parser: Parser<DeleteDeviceRequest> = DeleteDeviceRequest.parser()
 
-    override fun handle(request: DeleteDeviceRequest): DeleteDeviceResponse = runCatching {
+    override fun handle(request: DeleteDeviceRequest): Mono<DeleteDeviceResponse> {
         val deviceId = request.deviceId
-        deviceService.deleteDevice(deviceId)
-        buildSuccessResponse()
-    }.getOrElse { exception ->
-        buildFailureResponse(exception.javaClass.simpleName, exception.toString())
+        return deviceService.deleteDevice(deviceId)
+            .then (buildSuccessResponse().toMono())
+            .onErrorResume { exception ->
+                buildFailureResponse(
+                    exception.javaClass.simpleName,
+                    exception.toString()
+                ).toMono()
+            }
     }
 
     private fun buildSuccessResponse(): DeleteDeviceResponse =

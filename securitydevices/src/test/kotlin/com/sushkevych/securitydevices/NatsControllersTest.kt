@@ -27,8 +27,8 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.data.mongodb.core.MongoTemplate
-import org.springframework.data.mongodb.core.remove
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate
+import org.springframework.data.mongodb.core.query.Query
 import org.springframework.test.context.ActiveProfiles
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
@@ -42,14 +42,14 @@ class NatsControllersTest {
     private lateinit var natsConnection: Connection
 
     @Autowired
-    private lateinit var mongoTemplate: MongoTemplate
+    private lateinit var reactiveMongoTemplate: ReactiveMongoTemplate
 
     @Autowired
     private lateinit var deviceRepository: DeviceRepository
 
     @AfterEach
     fun cleanDB() {
-        mongoTemplate.remove<MongoDevice>()
+        reactiveMongoTemplate.remove(Query(), MongoDevice::class.java).block()
     }
 
     @Test
@@ -63,7 +63,7 @@ class NatsControllersTest {
                 type = "Test Type",
                 attributes = emptyList()
             )
-        )
+        ).block()
 
         val deviceId = save?.id?.toHexString()
 
@@ -98,6 +98,8 @@ class NatsControllersTest {
         val request = GetAllDevicesRequest.getDefaultInstance()
 
         val protoDeviceList = deviceRepository.findAll().map { it.toResponse().toProtoDevice() }
+            .collectList()
+            .block()
 
         val expectedResponse = GetAllDevicesResponse.newBuilder().apply {
             successBuilder.addAllDevices(protoDeviceList)
@@ -125,7 +127,7 @@ class NatsControllersTest {
                 type = "Deleted Type",
                 attributes = emptyList()
             )
-        )
+        ).block()
 
         val deviceId = save?.id?.toHexString()
 
@@ -189,11 +191,12 @@ class NatsControllersTest {
                 type = "Type",
                 attributes = emptyList()
             )
-        )
+        ).block()
 
         val deviceId = save?.id?.toHexString()
 
         val updatedProtoDevice = Device.newBuilder().apply {
+            id = deviceId
             name = "Updated Test Device"
             description = "Updated Test Description"
             type = "Updated Test Type"
@@ -201,7 +204,6 @@ class NatsControllersTest {
         }.build()
 
         val request = UpdateDeviceRequest.newBuilder().apply {
-            setDeviceId(deviceId)
             setDevice(updatedProtoDevice)
         }.build()
 
@@ -214,8 +216,9 @@ class NatsControllersTest {
             device = updatedProtoDevice.toBuilder().setId(deviceId).build()
         }.build().toByteArray()
 
-        val expectedUpdatedEventSubject =
-            "${NatsSubject.DeviceEvent.DEVICE_PREFIX}${deviceId}${NatsSubject.DeviceEvent.UPDATED}"
+        val expectedUpdatedEventSubject = deviceId?.let {
+            NatsSubject.DeviceEvent.createDeviceEventSubject(it, NatsSubject.DeviceEvent.UPDATED)
+        }
 
         // WHEN
         val requestUpdatedEvent = CompletableFuture<ByteArray>()

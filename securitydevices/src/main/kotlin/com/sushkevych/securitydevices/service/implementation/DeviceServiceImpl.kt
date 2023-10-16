@@ -9,27 +9,28 @@ import com.sushkevych.securitydevices.repository.DeviceRepository
 import com.sushkevych.securitydevices.service.DeviceService
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Mono
 
 @Service
 class DeviceServiceImpl(private val deviceRepository: DeviceRepository) : DeviceService {
-    override fun getDeviceById(deviceId: String): DeviceResponse = deviceRepository.getDeviceById(ObjectId(deviceId))
-        ?.toResponse()
-        ?: throw NotFoundException(message = "Device with ID $deviceId not found")
+    override fun getDeviceById(deviceId: String): Mono<DeviceResponse> =
+        deviceRepository.getDeviceById(ObjectId(deviceId))
+            .switchIfEmpty(Mono.error(NotFoundException(message = "Device with ID $deviceId not found")))
+            .map { it.toResponse() }
 
-    override fun getAllDevices(): List<DeviceResponse> = deviceRepository.findAll().map { it.toResponse() }
+    override fun getAllDevices(): Mono<List<DeviceResponse>> =
+        deviceRepository.findAll()
+            .map { it.toResponse() }
+            .collectList()
 
-    override fun saveDevice(deviceRequest: DeviceRequest): DeviceResponse {
-        val device = deviceRequest.toEntity()
-        deviceRepository.save(device)
-        return device.toResponse()
-    }
+    override fun saveDevice(deviceRequest: DeviceRequest): Mono<DeviceResponse> =
+        deviceRepository.save(deviceRequest.toEntity())
+            .map { it.toResponse() }
 
-    override fun updateDevice(deviceId: String, deviceRequest: DeviceRequest): DeviceResponse {
-        val existingDevice = getDeviceById(deviceId)
-        val updatedDevice = deviceRequest.copy(id = existingDevice.id).toEntity()
-        deviceRepository.save(updatedDevice)
-        return updatedDevice.toResponse()
-    }
+    override fun updateDevice(deviceRequest: DeviceRequest): Mono<DeviceResponse> =
+        deviceRepository.update(deviceRequest.toEntity())
+            .switchIfEmpty(Mono.error(NotFoundException(message = "Device with ID ${deviceRequest.id} not found")))
+            .map { it.toResponse() }
 
     override fun deleteDevice(deviceId: String) = deviceRepository.deleteById(ObjectId(deviceId))
 }

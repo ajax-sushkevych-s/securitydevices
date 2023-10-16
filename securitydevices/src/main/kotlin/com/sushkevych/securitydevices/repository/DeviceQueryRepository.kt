@@ -4,63 +4,96 @@ import com.sushkevych.securitydevices.model.MongoDevice
 import com.sushkevych.securitydevices.model.MongoDeviceStatus
 import com.sushkevych.securitydevices.model.MongoUser
 import org.bson.types.ObjectId
-import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Repository
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 @Repository
-class DeviceQueryRepository(private val mongoTemplate: MongoTemplate) : DeviceRepository {
-    override fun getDeviceById(deviceId: ObjectId): MongoDevice? =
-        mongoTemplate.findOne(
+class DeviceQueryRepository(private val reactiveMongoTemplate: ReactiveMongoTemplate) : DeviceRepository {
+
+    override fun getDeviceById(deviceId: ObjectId): Mono<MongoDevice> =
+        reactiveMongoTemplate.findOne(
             Query(Criteria.where("id").`is`(deviceId)),
-            MongoDevice::class.java,
-            MongoDevice.COLLECTION_NAME
+            MongoDevice::class.java
         )
 
-    override fun findAll(): List<MongoDevice> = mongoTemplate.findAll(MongoDevice::class.java)
+    override fun findAll(): Flux<MongoDevice> =
+        reactiveMongoTemplate.findAll(MongoDevice::class.java)
 
-    override fun save(device: MongoDevice): MongoDevice? = mongoTemplate.save(device, MongoDevice.COLLECTION_NAME)
+    override fun save(device: MongoDevice): Mono<MongoDevice> =
+        reactiveMongoTemplate.save(device)
 
-    override fun deleteById(deviceId: ObjectId) {
-        val deviceQuery = Query(Criteria.where("id").`is`(deviceId))
-
-        val userDeviceIds = extractUserDeviceIds(getUsersWithDevice(deviceId), deviceId)
-
-        removeDeviceStatus(userDeviceIds)
-        updateUsers(deviceId)
-        removeDevice(deviceQuery)
-    }
-
-    private fun getUsersWithDevice(deviceId: ObjectId): List<MongoUser> {
-        return mongoTemplate.find(
-            Query(Criteria.where("devices.device_id").`is`(deviceId)),
-            MongoUser::class.java,
-            MongoUser.COLLECTION_NAME
-        )
-    }
-
-    private fun extractUserDeviceIds(usersWithDevice: List<MongoUser>, deviceId: ObjectId): List<String> =
-        usersWithDevice.flatMap { user ->
-            user.devices.filter { it?.deviceId == deviceId }
-                .mapNotNull { it?.userDeviceId?.toHexString() }
+    override fun update(device: MongoDevice): Mono<MongoDevice> {
+        val query = Query(Criteria.where("id").`is`(device.id))
+        val update = Update().apply {
+            set("name", device.name)
+            set("description", device.description)
+            set("type", device.type)
+            set("attributes", device.attributes)
         }
+        return reactiveMongoTemplate.updateFirst(query, update, MongoDevice::class.java)
+            .handle { result, sink ->
+                if (result.modifiedCount > 0) {
+                    sink.next( device)
+                } else {
+                    sink.complete()
+                }
+            }
+    }
 
-    private fun removeDeviceStatus(userDeviceIds: List<String>) =
-        mongoTemplate.remove(
-            Query(Criteria.where("user_device_id").`in`(userDeviceIds)),
-            MongoDeviceStatus::class.java,
-            MongoDeviceStatus.COLLECTION_NAME
-        )
+    override fun deleteById(deviceId: ObjectId): Mono<Unit> =
+        getUsersWithDevice(deviceId)
+            .collectList()
+            .flatMap { usersWithDevice ->
+                val deviceQuery = Query(Criteria.where("id").`is`(deviceId))
 
-    private fun updateUsers(deviceId: ObjectId) =
-        mongoTemplate.updateMulti(
-            Query(),
-            Update().pull("devices", Query(Criteria.where("device_id").`is`(deviceId))),
+                val userDeviceIds = extractUserDeviceIds(deviceId, usersWithDevice)
+
+                Flux.concat(
+                    removeDeviceStatus(userDeviceIds),
+                    updateUsers(deviceId),
+                    removeDevice(deviceQuery)
+                ).toMono()
+            }
+
+    private fun getUsersWithDevice(deviceId: ObjectId): Flux<MongoUser> =
+        reactiveMongoTemplate.find(
+            Query(Criteria.where("devices.deviceId").`is`(deviceId)),
             MongoUser::class.java
         )
 
-    private fun removeDevice(deviceQuery: Query) =
-        mongoTemplate.remove(deviceQuery, MongoDevice::class.java, MongoDevice.COLLECTION_NAME)
+    private fun extractUserDeviceIds(deviceId: ObjectId, usersWithDevice: List<MongoUser>): List<String> =
+        usersWithDevice
+            .asSequence()
+            .flatMap { user -> user.devices.asSequence() }
+            .filter { device -> device?.deviceId == deviceId }
+            .mapNotNull { device -> device?.userDeviceId?.toHexString() }
+            .toList()
+
+    private fun removeDeviceStatus(userDeviceIds: List<String>): Mono<Unit> {
+        return Mono.fromSupplier { userDeviceIds }
+            .flatMap { userDeviceIdList ->
+                val query = Query(Criteria.where("userDeviceId").`in`(userDeviceIdList))
+                reactiveMongoTemplate.remove(query, MongoDeviceStatus::class.java)
+            }
+            .thenReturn(Unit)
+    }
+
+    private fun updateUsers(deviceId: ObjectId): Mono<Unit> {
+        return reactiveMongoTemplate.updateMulti(
+            Query(),
+            Update().pull("devices", Query(Criteria.where("deviceId").`is`(deviceId))),
+            MongoUser::class.java
+        ).thenReturn(Unit)
+    }
+
+    private fun removeDevice(deviceQuery: Query): Mono<Unit> {
+        return reactiveMongoTemplate.remove(deviceQuery, MongoDevice::class.java)
+            .thenReturn(Unit)
+    }
 }

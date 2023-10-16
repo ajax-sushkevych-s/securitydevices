@@ -2,25 +2,30 @@ package com.sushkevych.securitydevices.repository
 
 import com.sushkevych.securitydevices.model.MongoUser
 import org.bson.types.ObjectId
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
+@Suppress("TooManyFunctions")
 interface UserRepository {
-    fun getUserById(id: ObjectId): MongoUser?
+    fun getUserById(id: ObjectId): Mono<MongoUser>
 
-    fun findAll(): List<MongoUser>
+    fun findAll(): Flux<MongoUser>
 
-    fun save(user: MongoUser): MongoUser?
+    fun save(user: MongoUser): Mono<MongoUser>
 
-    fun deleteById(userId: ObjectId)
+    fun update(user: MongoUser): Mono<MongoUser>
 
-    fun getUserByUserName(username: String): MongoUser?
+    fun deleteById(userId: ObjectId): Mono<Unit>
 
-    fun findUsersWithSpecificDevice(deviceId: ObjectId): List<MongoUser>
+    fun getUserByUserName(username: String): Mono<MongoUser>
 
-    fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): List<MongoUser>
+    fun findUsersWithSpecificDevice(deviceId: ObjectId): Flux<MongoUser>
 
-    fun findUsersWithoutDevices(): List<MongoUser>
+    fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): Flux<MongoUser>
 
-    fun getUsersByOffsetPagination(offset: Int, limit: Int): Pair<List<MongoUser>, Long>
+    fun findUsersWithoutDevices(): Flux<MongoUser>
 
-    fun getUsersByCursorBasedPagination(pageSize: Int, cursor: String?): Pair<List<MongoUser>, Long>
+    fun getUsersByOffsetPagination(offset: Int, limit: Int): Mono<Pair<List<MongoUser>, Long>>
+
+    fun getUsersByCursorBasedPagination(pageSize: Int, cursor: String?): Mono<Pair<List<MongoUser>, Long>>
 }

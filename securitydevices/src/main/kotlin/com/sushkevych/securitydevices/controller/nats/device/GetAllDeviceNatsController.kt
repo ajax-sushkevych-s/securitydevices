@@ -10,6 +10,8 @@ import com.sushkevych.securitydevices.request.device.get_all.proto.GetAllDevices
 import com.sushkevych.securitydevices.service.DeviceService
 import io.nats.client.Connection
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 @Component
 class GetAllDeviceNatsController(
@@ -20,10 +22,15 @@ class GetAllDeviceNatsController(
     override val subject = GET_ALL
     override val parser: Parser<GetAllDevicesRequest> = GetAllDevicesRequest.parser()
 
-    override fun handle(request: GetAllDevicesRequest): GetAllDevicesResponse = runCatching {
-        buildSuccessResponse(deviceService.getAllDevices().map { it.toProtoDevice() })
-    }.getOrElse { exception ->
-        buildFailureResponse(exception.javaClass.simpleName, exception.toString())
+    override fun handle(request: GetAllDevicesRequest): Mono<GetAllDevicesResponse> {
+        return deviceService.getAllDevices()
+            .map { devices -> buildSuccessResponse(devices.map { it.toProtoDevice() }) }
+            .onErrorResume { exception ->
+                buildFailureResponse(
+                    exception.javaClass.simpleName,
+                    exception.toString()
+                ).toMono()
+            }
     }
 
     private fun buildSuccessResponse(deviceList: List<Device>): GetAllDevicesResponse =

@@ -16,8 +16,11 @@ object NatsSubject {
     }
 
     object DeviceEvent {
-        const val DEVICE_PREFIX = "$EVENT_PREFIX.device."
+        private const val DEVICE_PREFIX = "$EVENT_PREFIX.device"
 
-        const val UPDATED = ".updated"
+        const val UPDATED = "updated"
+
+        fun createDeviceEventSubject(deviceId: String, eventType: String): String =
+            "$DEVICE_PREFIX.$deviceId.$eventType"
     }
 }
