@@ -117,7 +117,6 @@ class UserQueryRepository(
         return getUsersAndTotalCountFromAggregationResult(aggregation)
     }
 
-    @Suppress("UNCHECKED_CAST")
     private fun getUsersAndTotalCountFromAggregationResult(
         aggregation: TypedAggregation<MongoUser>
     ): Mono<Pair<List<MongoUser>, Long>> {
@@ -131,11 +130,13 @@ class UserQueryRepository(
             }
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun extractTotalCount(result: MutableList<Map<*, *>>): Int {
         val totalCount = result.getOrNull(0)?.get("totalCount") as? List<LinkedHashMap<*, *>>
         return totalCount?.getOrNull(0)?.get("totalCount") as? Int ?: 0
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun extractUsers(result: MutableList<Map<*, *>>): List<MongoUser> {
         val pagedUsers = result.getOrNull(0)?.get("users") as? List<LinkedHashMap<*, *>>
         val users = pagedUsers?.takeIf { it.isNotEmpty() }?.map { userMap ->
