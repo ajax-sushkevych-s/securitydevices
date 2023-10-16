@@ -23,7 +23,7 @@ class DeleteDeviceNatsController(
     override fun handle(request: DeleteDeviceRequest): Mono<DeleteDeviceResponse> {
         val deviceId = request.deviceId
         return deviceService.deleteDevice(deviceId)
-            .flatMap { buildSuccessResponse().toMono() }
+            .then (buildSuccessResponse().toMono())
             .onErrorResume { exception ->
                 buildFailureResponse(
                     exception.javaClass.simpleName,
