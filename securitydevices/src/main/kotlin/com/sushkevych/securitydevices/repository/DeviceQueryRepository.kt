@@ -30,11 +30,12 @@ class DeviceQueryRepository(private val reactiveMongoTemplate: ReactiveMongoTemp
 
     override fun update(device: MongoDevice): Mono<MongoDevice> {
         val query = Query(Criteria.where("id").`is`(device.id))
-        val update = Update()
-            .set("name", device.name)
-            .set("description", device.description)
-            .set("type", device.type)
-            .set("attributes", device.attributes)
+        val update = Update().apply {
+            set("name", device.name)
+            set("description", device.description)
+            set("type", device.type)
+            set("attributes", device.attributes)
+        }
         return reactiveMongoTemplate.updateFirst(query, update, MongoDevice::class.java)
             .flatMap { if (it.modifiedCount > 0) device.toMono() else Mono.empty() }
     }

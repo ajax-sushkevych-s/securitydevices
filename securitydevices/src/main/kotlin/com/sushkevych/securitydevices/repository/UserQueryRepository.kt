@@ -35,12 +35,13 @@ class UserQueryRepository(
 
     override fun update(user: MongoUser): Mono<MongoUser> {
         val query = Query(Criteria.where("id").`is`(user.id))
-        val update = Update()
-            .set("username", user.username)
-            .set("email", user.email)
-            .set("mobileNumber", user.mobileNumber)
-            .set("password", user.password)
-            .set("devices", user.devices)
+        val update = Update().apply {
+            set("username", user.username)
+            set("email", user.email)
+            set("mobileNumber", user.mobileNumber)
+            set("password", user.password)
+            set("devices", user.devices)
+        }
         return reactiveMongoTemplate.updateFirst(query, update, MongoUser::class.java)
             .flatMap { if (it.modifiedCount > 0) user.toMono() else Mono.empty() }
     }
