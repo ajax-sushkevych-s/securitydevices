@@ -25,7 +25,7 @@ class GetDeviceByIdNatsController(
     override fun handle(request: GetByIdDeviceRequest): Mono<GetByIdDeviceResponse> {
         val deviceId = request.deviceId
         return deviceService.getDeviceById(deviceId)
-            .map { device -> buildSuccessResponse(device.toProtoDevice()) }
+            .map { buildSuccessResponse(it.toProtoDevice()) }
             .onErrorResume { exception ->
                 buildFailureResponse(
                     exception.javaClass.simpleName,

@@ -37,7 +37,13 @@ class DeviceQueryRepository(private val reactiveMongoTemplate: ReactiveMongoTemp
             set("attributes", device.attributes)
         }
         return reactiveMongoTemplate.updateFirst(query, update, MongoDevice::class.java)
-            .flatMap { if (it.modifiedCount > 0) device.toMono() else Mono.empty() }
+            .handle { result, sink ->
+                if (result.modifiedCount > 0) {
+                    sink.next( device)
+                } else {
+                    sink.complete()
+                }
+            }
     }
 
     override fun deleteById(deviceId: ObjectId): Mono<Unit> =
@@ -48,12 +54,11 @@ class DeviceQueryRepository(private val reactiveMongoTemplate: ReactiveMongoTemp
 
                 val userDeviceIds = extractUserDeviceIds(deviceId, usersWithDevice)
 
-                val removeDeviceStatusMono = removeDeviceStatus(userDeviceIds)
-                val updateUsersMono = updateUsers(deviceId)
-                val removeDeviceMono = removeDevice(deviceQuery)
-
-                Flux.concat(removeDeviceStatusMono, updateUsersMono, removeDeviceMono)
-                    .then(Unit.toMono())
+                Flux.concat(
+                    removeDeviceStatus(userDeviceIds),
+                    updateUsers(deviceId),
+                    removeDevice(deviceQuery)
+                ).toMono()
             }
 
     private fun getUsersWithDevice(deviceId: ObjectId): Flux<MongoUser> =
@@ -64,9 +69,11 @@ class DeviceQueryRepository(private val reactiveMongoTemplate: ReactiveMongoTemp
 
     private fun extractUserDeviceIds(deviceId: ObjectId, usersWithDevice: List<MongoUser>): List<String> =
         usersWithDevice
-            .flatMap { user -> user.devices }
+            .asSequence()
+            .flatMap { user -> user.devices.asSequence() }
             .filter { device -> device?.deviceId == deviceId }
             .mapNotNull { device -> device?.userDeviceId?.toHexString() }
+            .toList()
 
     private fun removeDeviceStatus(userDeviceIds: List<String>): Mono<Unit> {
         return Mono.fromSupplier { userDeviceIds }

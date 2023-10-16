@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 import java.lang.reflect.Method
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
@@ -75,9 +76,13 @@ class DeviceAuthorizationInvocationHandler(
     private fun createDevicesStatus(userRequest: UserRequest): Mono<Unit> {
         return Flux.fromIterable(userRequest.devices)
             .flatMap { userDeviceRequest ->
-                userDeviceRequest.userDeviceId?.let { getDeviceStatusOrCreateNew(it) } ?: Mono.empty()
+                if (userDeviceRequest.userDeviceId == null) {
+                    Mono.empty()
+                } else {
+                    getDeviceStatusOrCreateNew(userDeviceRequest.userDeviceId)
+                }
             }
-            .then().thenReturn(Unit)
+            .then(Unit.toMono())
     }
 
     private fun getDeviceStatusOrCreateNew(userDeviceId: String): Mono<MongoDeviceStatus> =

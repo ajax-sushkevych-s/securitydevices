@@ -124,17 +124,25 @@ class UserQueryRepository(
         return reactiveMongoTemplate.aggregate(aggregation, Map::class.java)
             .collectList()
             .flatMap { result ->
-                val pagedUsers = result.getOrNull(0)?.get("users") as? List<LinkedHashMap<*, *>>
-                val users = pagedUsers?.takeIf { it.isNotEmpty() }?.map { userMap ->
-                    val modifiedUserMap = modifyObjectIdToHexId(userMap)
-                    objectMapper.convertValue(modifiedUserMap, MongoUser::class.java)
-                } ?: emptyList()
-
-                val totalCount = result.getOrNull(0)?.get("totalCount") as? List<LinkedHashMap<*, *>>
-                val totalCountValue = totalCount?.getOrNull(0)?.get("totalCount") as? Int ?: 0
-
-                Pair(users, totalCountValue.toLong()).toMono()
+                Pair(
+                    extractUsers(result),
+                    extractTotalCount(result).toLong()
+                ).toMono()
             }
+    }
+
+    private fun extractTotalCount(result: MutableList<Map<*, *>>): Int {
+        val totalCount = result.getOrNull(0)?.get("totalCount") as? List<LinkedHashMap<*, *>>
+        return totalCount?.getOrNull(0)?.get("totalCount") as? Int ?: 0
+    }
+
+    private fun extractUsers(result: MutableList<Map<*, *>>): List<MongoUser> {
+        val pagedUsers = result.getOrNull(0)?.get("users") as? List<LinkedHashMap<*, *>>
+        val users = pagedUsers?.takeIf { it.isNotEmpty() }?.map { userMap ->
+            val modifiedUserMap = modifyObjectIdToHexId(userMap)
+            objectMapper.convertValue(modifiedUserMap, MongoUser::class.java)
+        } ?: emptyList()
+        return users
     }
 
     @Suppress("UNCHECKED_CAST")

@@ -26,7 +26,7 @@ class CreateDeviceNatsController(
     override fun handle(request: CreateDeviceRequest): Mono<CreateDeviceResponse> {
         val device = request.device.toDeviceRequest()
         return deviceService.saveDevice(device)
-            .map { deviceResponse -> buildSuccessResponse(deviceResponse.toProtoDevice()) }
+            .map {buildSuccessResponse(it.toProtoDevice()) }
             .onErrorResume { exception ->
                 buildFailureResponse(
                     exception.javaClass.simpleName,

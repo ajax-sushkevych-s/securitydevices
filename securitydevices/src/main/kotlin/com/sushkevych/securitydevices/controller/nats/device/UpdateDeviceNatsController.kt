@@ -28,10 +28,11 @@ class UpdateDeviceNatsController(
     override fun handle(request: UpdateDeviceRequest): Mono<UpdateDeviceResponse> {
         val device = request.device.toDeviceRequest()
         return deviceService.updateDevice(device)
-            .map { updatedDevice ->
-                val updatedDeviceResponse = updatedDevice.toProtoDevice()
-                publishUpdatedEvent(updatedDeviceResponse)
-                buildSuccessResponse(updatedDeviceResponse)
+            .doOnNext {
+                publishUpdatedEvent(it.toProtoDevice())
+            }
+            .map {
+                buildSuccessResponse(it.toProtoDevice())
             }
             .onErrorResume { exception ->
                 Mono.just(buildFailureResponse(exception.javaClass.simpleName, exception.toString()))
