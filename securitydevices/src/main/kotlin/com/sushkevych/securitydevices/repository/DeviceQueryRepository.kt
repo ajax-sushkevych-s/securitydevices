@@ -39,7 +39,7 @@ class DeviceQueryRepository(private val reactiveMongoTemplate: ReactiveMongoTemp
         return reactiveMongoTemplate.updateFirst(query, update, MongoDevice::class.java)
             .handle { result, sink ->
                 if (result.modifiedCount > 0) {
-                    sink.next( device)
+                    sink.next(device)
                 } else {
                     sink.complete()
                 }
@@ -58,7 +58,7 @@ class DeviceQueryRepository(private val reactiveMongoTemplate: ReactiveMongoTemp
                     removeDeviceStatus(userDeviceIds),
                     updateUsers(deviceId),
                     removeDevice(deviceQuery)
-                ).toMono()
+                ).then(Unit.toMono())
             }
 
     private fun getUsersWithDevice(deviceId: ObjectId): Flux<MongoUser> =
@@ -75,25 +75,22 @@ class DeviceQueryRepository(private val reactiveMongoTemplate: ReactiveMongoTemp
             .mapNotNull { device -> device?.userDeviceId?.toHexString() }
             .toList()
 
-    private fun removeDeviceStatus(userDeviceIds: List<String>): Mono<Unit> {
-        return Mono.fromSupplier { userDeviceIds }
+    private fun removeDeviceStatus(userDeviceIds: List<String>): Mono<Unit> =
+        Mono.fromSupplier { userDeviceIds }
             .flatMap { userDeviceIdList ->
                 val query = Query(Criteria.where("userDeviceId").`in`(userDeviceIdList))
                 reactiveMongoTemplate.remove(query, MongoDeviceStatus::class.java)
             }
             .thenReturn(Unit)
-    }
 
-    private fun updateUsers(deviceId: ObjectId): Mono<Unit> {
-        return reactiveMongoTemplate.updateMulti(
+    private fun updateUsers(deviceId: ObjectId): Mono<Unit> =
+        reactiveMongoTemplate.updateMulti(
             Query(),
             Update().pull("devices", Query(Criteria.where("deviceId").`is`(deviceId))),
             MongoUser::class.java
         ).thenReturn(Unit)
-    }
 
-    private fun removeDevice(deviceQuery: Query): Mono<Unit> {
-        return reactiveMongoTemplate.remove(deviceQuery, MongoDevice::class.java)
+    private fun removeDevice(deviceQuery: Query): Mono<Unit> =
+        reactiveMongoTemplate.remove(deviceQuery, MongoDevice::class.java)
             .thenReturn(Unit)
-    }
 }

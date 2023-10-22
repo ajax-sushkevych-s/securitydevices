@@ -10,7 +10,7 @@ import com.sushkevych.securitydevices.dto.response.toProtoDevice
 import com.sushkevych.securitydevices.dto.response.toResponse
 import com.sushkevych.securitydevices.model.MongoDevice
 import com.sushkevych.securitydevices.output.device.update.proto.DeviceUpdatedEvent
-import com.sushkevych.securitydevices.repository.DeviceRepository
+import com.sushkevych.securitydevices.repository.DeviceQueryRepository
 import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceRequest
 import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceResponse
 import com.sushkevych.securitydevices.request.device.delete.proto.DeleteDeviceRequest
@@ -45,7 +45,7 @@ class NatsControllersTest {
     private lateinit var reactiveMongoTemplate: ReactiveMongoTemplate
 
     @Autowired
-    private lateinit var deviceRepository: DeviceRepository
+    private lateinit var deviceRepository: DeviceQueryRepository
 
     @AfterEach
     fun cleanDB() {
