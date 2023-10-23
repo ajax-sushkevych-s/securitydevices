@@ -11,7 +11,6 @@ import org.springframework.data.mongodb.core.query.Update
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toMono
 
 @Repository
 class DeviceQueryRepository(private val reactiveMongoTemplate: ReactiveMongoTemplate) : DeviceRepository {
@@ -58,8 +57,8 @@ class DeviceQueryRepository(private val reactiveMongoTemplate: ReactiveMongoTemp
                     removeDeviceStatus(userDeviceIds),
                     updateUsers(deviceId),
                     removeDevice(deviceQuery)
-                ).then(Unit.toMono())
-            }
+                ).then()
+            }.thenReturn(Unit)
 
     private fun getUsersWithDevice(deviceId: ObjectId): Flux<MongoUser> =
         reactiveMongoTemplate.find(
