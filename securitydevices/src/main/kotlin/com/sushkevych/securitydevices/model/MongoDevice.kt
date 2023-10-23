@@ -1,5 +1,7 @@
 package com.sushkevych.securitydevices.model
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import com.sushkevych.securitydevices.model.MongoDevice.Companion.COLLECTION_NAME
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.Id
@@ -10,6 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 @Document(value = COLLECTION_NAME)
 data class MongoDevice(
     @Id
+    @JsonSerialize(using = ToStringSerializer::class)
     val id: ObjectId?,
     val name: String?,
     val description: String?,

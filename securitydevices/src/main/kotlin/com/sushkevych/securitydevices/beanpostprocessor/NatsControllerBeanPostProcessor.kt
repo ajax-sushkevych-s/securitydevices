@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component
 import com.google.protobuf.GeneratedMessageV3
 import com.sushkevych.securitydevices.controller.nats.NatsController
 import io.nats.client.Connection
+import reactor.core.scheduler.Schedulers
 
 @Component
 class NatsControllerBeanPostProcessor(private val connection: Connection) : BeanPostProcessor {
@@ -20,9 +21,10 @@ class NatsControllerBeanPostProcessor(private val connection: Connection) : Bean
             initializeNatsController(controller: NatsController<RequestT, ResponseT>, connection: Connection) {
         connection.createDispatcher { message ->
             val parsedData = controller.parser.parseFrom(message.data)
-            controller.handle(parsedData).subscribe { response ->
-                connection.publish(message.replyTo, response.toByteArray())
-            }
+            controller.handle(parsedData)
+                .map { it.toByteArray() }
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe { connection.publish(message.replyTo, it) }
         }.apply { subscribe(controller.subject) }
     }
 }
