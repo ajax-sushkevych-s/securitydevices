@@ -21,7 +21,9 @@ class DeviceRedisRepository(private val reactiveRedisTemplate: ReactiveRedisTemp
     private lateinit var deviceKeyPrefix: String
 
     override fun getDeviceById(deviceId: ObjectId): Mono<MongoDevice> =
-        reactiveRedisTemplate.opsForValue().get(deviceKeyPrefix + deviceId.toHexString())
+        reactiveRedisTemplate
+            .opsForValue()
+            .get(deviceKeyPrefix + deviceId.toHexString())
 
     override fun findAll(): Flux<MongoDevice> =
         reactiveRedisTemplate.keys("${deviceKeyPrefix}*")
@@ -31,7 +33,11 @@ class DeviceRedisRepository(private val reactiveRedisTemplate: ReactiveRedisTemp
         val key = device.id?.toHexString()
         return key?.let { nonNullKey ->
             reactiveRedisTemplate.opsForValue()
-                .set(deviceKeyPrefix + nonNullKey, device, Duration.ofMinutes(redisTtlMinutes.toLong()))
+                .set(
+                    deviceKeyPrefix + nonNullKey,
+                    device,
+                    Duration.ofMinutes(redisTtlMinutes.toLong())
+                )
                 .thenReturn(device)
         } ?: Mono.empty()
     }
@@ -39,6 +45,7 @@ class DeviceRedisRepository(private val reactiveRedisTemplate: ReactiveRedisTemp
     override fun update(device: MongoDevice): Mono<MongoDevice> = save(device)
 
     override fun deleteById(deviceId: ObjectId): Mono<Unit> =
-        reactiveRedisTemplate.delete(deviceKeyPrefix + deviceId.toHexString())
+        reactiveRedisTemplate
+            .delete(deviceKeyPrefix + deviceId.toHexString())
             .then(Unit.toMono())
 }

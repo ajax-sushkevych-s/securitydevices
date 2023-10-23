@@ -32,11 +32,7 @@ class DeviceServiceImpl(
         deviceRedisRepository.findAll()
             .collectList()
             .flatMap { cachedDevices ->
-                if (cachedDevices.isNotEmpty()) {
-                    cachedDevices.toMono()
-                } else {
-                    fetchFromMongoAndCache()
-                }
+                if (cachedDevices.isNotEmpty()) cachedDevices.toMono() else fetchFromMongoAndCache()
             }
             .map { devices -> devices.map(MongoDevice::toResponse) }
 
@@ -54,7 +50,7 @@ class DeviceServiceImpl(
     override fun deleteDevice(deviceId: String) =
         deviceMongoRepository.deleteById(ObjectId(deviceId))
             .then(deviceRedisRepository.deleteById(ObjectId(deviceId)))
-            .then(Unit.toMono())
+            .thenReturn(Unit)
 
     private fun fetchFromMongoAndCache(): Mono<List<MongoDevice>> {
         return deviceMongoRepository.findAll()

@@ -39,8 +39,6 @@ class DeviceQueryRepository(private val reactiveMongoTemplate: ReactiveMongoTemp
             .handle { result, sink ->
                 if (result.modifiedCount > 0) {
                     sink.next(device)
-                } else {
-                    sink.complete()
                 }
             }
     }
