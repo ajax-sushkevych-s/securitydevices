@@ -1,8 +1,9 @@
-package com.sushkevych.securitydevices.repository
+package com.sushkevych.securitydevices.repository.implementation
 
 import com.sushkevych.securitydevices.model.MongoDevice
 import com.sushkevych.securitydevices.model.MongoDeviceStatus
 import com.sushkevych.securitydevices.model.MongoUser
+import com.sushkevych.securitydevices.repository.DeviceRepository
 import org.bson.types.ObjectId
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
@@ -13,7 +14,9 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Repository
-class DeviceQueryRepository(private val reactiveMongoTemplate: ReactiveMongoTemplate) : DeviceRepository {
+class DeviceMongoRepositoryImpl(
+    private val reactiveMongoTemplate: ReactiveMongoTemplate
+) : DeviceRepository {
 
     override fun getDeviceById(deviceId: ObjectId): Mono<MongoDevice> =
         reactiveMongoTemplate.findOne(

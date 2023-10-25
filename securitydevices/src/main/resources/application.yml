@@ -4,6 +4,10 @@ spring:
   data:
     mongodb:
       uri: mongodb://root:root@mongo-security-devices:27017/mongo-db?authSource=admin
+  kafka:
+    bootstrap-servers: http://kafka-security-devices:29092
+    properties:
+      schema.registry.url: http://schema-registry-security-devices:8081
 
 nats:
   url: "nats://nats-security-devices:4222"

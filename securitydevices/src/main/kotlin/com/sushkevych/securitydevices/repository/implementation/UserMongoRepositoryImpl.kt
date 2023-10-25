@@ -1,9 +1,10 @@
-package com.sushkevych.securitydevices.repository
+package com.sushkevych.securitydevices.repository.implementation
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.mongodb.client.result.DeleteResult
 import com.sushkevych.securitydevices.model.MongoDeviceStatus
 import com.sushkevych.securitydevices.model.MongoUser
+import com.sushkevych.securitydevices.repository.UserRepository
 import org.bson.types.ObjectId
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
@@ -20,11 +21,10 @@ import reactor.kotlin.core.publisher.toMono
 
 @Repository
 @Suppress("TooManyFunctions")
-class UserQueryRepository(
+class UserMongoRepositoryImpl(
     private val reactiveMongoTemplate: ReactiveMongoTemplate,
     private val objectMapper: ObjectMapper
-) :
-    UserRepository {
+) : UserRepository {
 
     override fun getUserById(id: ObjectId): Mono<MongoUser> =
         reactiveMongoTemplate.findOne(Query().addCriteria(Criteria.where("id").`is`(id)), MongoUser::class.java)
