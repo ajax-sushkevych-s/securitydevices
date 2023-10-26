@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.ScanOptions
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
+import reactor.kotlin.core.publisher.switchIfEmptyDeferred
 import reactor.kotlin.core.publisher.toMono
 import java.time.Duration
 
@@ -36,19 +37,19 @@ class DeviceRedisRepositoryImpl(
                     }
             }
 
-    override fun findAll(): Mono<List<MongoDevice>> =
-        reactiveRedisTemplate.scan(ScanOptions.scanOptions().match("${deviceKeyPrefix}*").build())
-            .flatMap { reactiveRedisTemplate.opsForValue().get(it) }
-            .collectList()
-            .flatMap { cachedDevices ->
-                if (cachedDevices.isNotEmpty()) {
-                    cachedDevices.toMono()
-                } else {
-                    deviceRepository.findAll()
-                        .flatMap { saveDeviceToCache(it) }
-                        .collectList()
+    override fun findAll(): Mono<List<MongoDevice>> = reactiveRedisTemplate.scan(
+        ScanOptions
+            .scanOptions()
+            .match("${deviceKeyPrefix}*")
+            .build()
+    ).flatMap { reactiveRedisTemplate.opsForValue().get(it) }
+        .switchIfEmptyDeferred {
+            deviceRepository.findAll()
+                .flatMap {
+                    saveDeviceToCache(it)
                 }
-            }
+        }
+        .collectList()
 
     override fun save(device: MongoDevice): Mono<MongoDevice> = deviceRepository.save(device)
         .flatMap { savedDevice ->

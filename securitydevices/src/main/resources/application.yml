@@ -1,9 +1,11 @@
 spring:
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
   data:
     mongodb:
       uri: mongodb://root:root@mongo-security-devices:27017/mongo-db?authSource=admin
+
   kafka:
     bootstrap-servers: http://kafka-security-devices:29092
     properties:

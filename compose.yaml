@@ -2,7 +2,7 @@ version: '3'
 
 services:
   mongo-security-devices:
-    image: mongo
+    image: mongo:7.0.2
     ports:
       - "27017:27017"
     volumes:
@@ -19,7 +19,7 @@ services:
       retries: 5
 
   nats-security-devices:
-    image: nats
+    image: nats:2.9.23
     ports:
       - "4222:4222"
     healthcheck:
@@ -29,12 +29,12 @@ services:
       retries: 5
 
   redis-security-devices:
-    image: redis
+    image: redis:alpine3.18
     ports:
       - "6379:6379"
 
   kafka-security-devices:
-    image: confluentinc/cp-kafka
+    image: confluentinc/cp-kafka:7.5.1
     ports:
       - "9092:9092"
     environment:
@@ -51,7 +51,7 @@ services:
       - kafka-data:/var/lib/kafka/data
 
   zookeeper-security-devices:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:7.5.1
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -60,7 +60,7 @@ services:
       - zookeeper-log:/var/lib/zookeeper/log
 
   schema-registry-security-devices:
-    image: confluentinc/cp-schema-registry:latest
+    image: confluentinc/cp-schema-registry:7.5.1
     ports:
       - "8081:8081"
     depends_on:
