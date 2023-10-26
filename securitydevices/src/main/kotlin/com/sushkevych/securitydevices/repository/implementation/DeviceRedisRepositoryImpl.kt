@@ -20,10 +20,10 @@ class DeviceRedisRepositoryImpl(
     private val deviceRepository: DeviceRepository
 ) : DeviceCacheableRepository {
 
-    @Value("\${redis.ttl.minutes}")
+    @Value("\${spring.data.redis.ttl.minutes}")
     private lateinit var redisTtlMinutes: String
 
-    @Value("\${redis.key.prefix}")
+    @Value("\${spring.data.redis.key.prefix}")
     private lateinit var deviceKeyPrefix: String
 
     override fun getDeviceById(deviceId: ObjectId): Mono<MongoDevice> =
