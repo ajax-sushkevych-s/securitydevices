@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.data.redis.core.ScanOptions
 import org.springframework.stereotype.Repository
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.switchIfEmptyDeferred
@@ -17,15 +18,10 @@ import java.time.Duration
 @Repository
 class DeviceRedisRepositoryImpl(
     private val reactiveRedisTemplate: ReactiveRedisTemplate<String, MongoDevice>,
-    private val deviceRepository: DeviceRepository
+    private val deviceRepository: DeviceRepository,
+    @Value("\${spring.data.redis.ttl.minutes}") private val redisTtlMinutes: String,
+    @Value("\${spring.data.redis.key.prefix}") private val deviceKeyPrefix: String
 ) : DeviceCacheableRepository {
-
-    @Value("\${spring.data.redis.ttl.minutes}")
-    private lateinit var redisTtlMinutes: String
-
-    @Value("\${spring.data.redis.key.prefix}")
-    private lateinit var deviceKeyPrefix: String
-
     override fun getDeviceById(deviceId: ObjectId): Mono<MongoDevice> =
         reactiveRedisTemplate
             .opsForValue()
@@ -37,7 +33,7 @@ class DeviceRedisRepositoryImpl(
                     }
             }
 
-    override fun findAll(): Mono<List<MongoDevice>> = reactiveRedisTemplate.scan(
+    override fun findAll(): Flux<MongoDevice> = reactiveRedisTemplate.scan(
         ScanOptions
             .scanOptions()
             .match("${deviceKeyPrefix}*")
@@ -49,7 +45,6 @@ class DeviceRedisRepositoryImpl(
                     saveDeviceToCache(it)
                 }
         }
-        .collectList()
 
     override fun save(device: MongoDevice): Mono<MongoDevice> = deviceRepository.save(device)
         .flatMap { savedDevice ->

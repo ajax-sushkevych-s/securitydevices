@@ -1,6 +1,6 @@
 package com.sushkevych.internalapi
 
-import com.sushkevych.internalapi.Constants.REQUEST_PREFIX
+import com.sushkevych.internalapi.MessageDestinations.REQUEST_PREFIX
 
 object NatsSubject {
     object DeviceRequest {

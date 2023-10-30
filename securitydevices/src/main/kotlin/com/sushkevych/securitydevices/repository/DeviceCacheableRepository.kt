@@ -2,12 +2,13 @@ package com.sushkevych.securitydevices.repository
 
 import com.sushkevych.securitydevices.model.MongoDevice
 import org.bson.types.ObjectId
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 interface DeviceCacheableRepository {
     fun getDeviceById(deviceId: ObjectId): Mono<MongoDevice>
 
-    fun findAll(): Mono<List<MongoDevice>>
+    fun findAll(): Flux<MongoDevice>
 
     fun save(device: MongoDevice): Mono<MongoDevice>
 

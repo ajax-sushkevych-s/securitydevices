@@ -19,7 +19,7 @@ class DeviceKafkaProducer(
         }.build()
         val senderRecord = SenderRecord.create(
             ProducerRecord(
-                DeviceEvent.createDeviceEventSubject(deviceProto.id, DeviceEvent.UPDATED),
+                DeviceEvent.createDeviceEventKafkaTopic(DeviceEvent.UPDATED),
                 deviceProto.id,
                 deviceUpdatedEvent
             ),

@@ -218,7 +218,7 @@ class NatsControllersTest {
         }.build().toByteArray()
 
         val expectedUpdatedEventSubject = deviceId?.let {
-            DeviceEvent.createDeviceEventSubject(it, DeviceEvent.UPDATED)
+            DeviceEvent.createDeviceEventNatsSubject(it, DeviceEvent.UPDATED)
         }
 
         // WHEN

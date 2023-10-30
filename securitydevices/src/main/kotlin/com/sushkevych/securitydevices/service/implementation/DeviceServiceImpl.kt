@@ -26,7 +26,8 @@ class DeviceServiceImpl(
 
     override fun getAllDevices(): Mono<List<DeviceResponse>> =
         deviceCacheableRepository.findAll()
-            .map { it.map(MongoDevice::toResponse) }
+            .map (MongoDevice::toResponse)
+            .collectList()
 
     override fun saveDevice(deviceRequest: DeviceRequest): Mono<DeviceResponse> =
         deviceCacheableRepository.save(deviceRequest.toEntity())
