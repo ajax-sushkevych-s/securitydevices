@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 @Document(value = COLLECTION_NAME)
 data class MongoDeviceStatus(
     @Id
-    val id: ObjectId? = null,
+    val id: ObjectId?,
     val userDeviceId: String?,
     val status: MongoDeviceStatusType,
     val batteryLevel: Double?,

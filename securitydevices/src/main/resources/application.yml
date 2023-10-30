@@ -21,3 +21,9 @@ spring:
 
 nats:
   url: "nats://nats-security-devices:4222"
+
+grpc:
+  server:
+    port: 9091
+    security:
+      enabled: false
