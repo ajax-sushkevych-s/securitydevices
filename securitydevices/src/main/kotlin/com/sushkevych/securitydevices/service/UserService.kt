@@ -5,12 +5,13 @@ import com.sushkevych.securitydevices.dto.response.CursorPaginateResponse
 import com.sushkevych.securitydevices.dto.response.OffsetPaginateResponse
 import com.sushkevych.securitydevices.dto.response.UserResponse
 import com.sushkevych.securitydevices.model.MongoUser
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 interface UserService {
     fun getUserById(userId: String): Mono<UserResponse>
 
-    fun findAllUsers(): Mono<List<UserResponse>>
+    fun findAllUsers(): Flux<UserResponse>
 
     fun saveUser(userRequest: UserRequest): Mono<UserResponse>
 
@@ -18,11 +19,11 @@ interface UserService {
 
     fun deleteUser(userId: String): Mono<Unit>
 
-    fun findUsersWithoutDevices(): Mono<List<UserResponse>>
+    fun findUsersWithoutDevices(): Flux<UserResponse>
 
-    fun findsUsersWithSpecificDevice(deviceId: String): Mono<List<UserResponse>>
+    fun findsUsersWithSpecificDevice(deviceId: String): Flux<UserResponse>
 
-    fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): Mono<List<UserResponse>>
+    fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): Flux<UserResponse>
 
     fun getUsersByOffsetPagination(offset: Int, limit: Int): Mono<OffsetPaginateResponse>
 

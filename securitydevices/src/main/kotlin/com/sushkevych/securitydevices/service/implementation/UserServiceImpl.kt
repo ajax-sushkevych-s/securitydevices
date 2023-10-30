@@ -13,6 +13,7 @@ import com.sushkevych.securitydevices.repository.UserRepository
 import com.sushkevych.securitydevices.service.UserService
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 
@@ -23,10 +24,9 @@ class UserServiceImpl(private val userRepository: UserRepository) : UserService 
             .switchIfEmpty(Mono.error(NotFoundException(message = "User with ID $userId not found")))
             .map { it.toResponse() }
 
-    override fun findAllUsers(): Mono<List<UserResponse>> =
+    override fun findAllUsers(): Flux<UserResponse> =
         userRepository.findAll()
             .map { it.toResponse() }
-            .collectList()
 
     @DeviceAuthorization
     override fun saveUser(userRequest: UserRequest): Mono<UserResponse> =
@@ -41,20 +41,17 @@ class UserServiceImpl(private val userRepository: UserRepository) : UserService 
 
     override fun deleteUser(userId: String) = userRepository.deleteById(ObjectId(userId))
 
-    override fun findUsersWithoutDevices(): Mono<List<UserResponse>> =
+    override fun findUsersWithoutDevices(): Flux<UserResponse> =
         userRepository.findUsersWithoutDevices()
             .map { it.toResponse() }
-            .collectList()
 
-    override fun findsUsersWithSpecificDevice(deviceId: String): Mono<List<UserResponse>> =
+    override fun findsUsersWithSpecificDevice(deviceId: String): Flux<UserResponse> =
         userRepository.findUsersWithSpecificDevice(ObjectId(deviceId))
             .map { it.toResponse() }
-            .collectList()
 
-    override fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): Mono<List<UserResponse>> =
+    override fun findUsersWithSpecificRole(role: MongoUser.MongoUserRole): Flux<UserResponse> =
         userRepository.findUsersWithSpecificRole(role)
             .map { it.toResponse() }
-            .collectList()
 
     override fun getUsersByOffsetPagination(offset: Int, limit: Int): Mono<OffsetPaginateResponse> =
         userRepository.getUsersByOffsetPagination(offset, limit)

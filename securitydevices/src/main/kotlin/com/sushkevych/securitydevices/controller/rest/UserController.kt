@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @RestController
@@ -27,7 +28,7 @@ class UserController(private val userService: UserService) {
     fun getUserById(@PathVariable userId: String): Mono<UserResponse> = userService.getUserById(userId)
 
     @GetMapping
-    fun getAllUsers(): Mono<List<UserResponse>> = userService.findAllUsers()
+    fun getAllUsers(): Flux<UserResponse> = userService.findAllUsers()
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -41,14 +42,14 @@ class UserController(private val userService: UserService) {
     fun deleteUser(@PathVariable userId: String): Mono<Unit> = userService.deleteUser(userId)
 
     @GetMapping("/no-devices")
-    fun findUsersWithoutDevices(): Mono<List<UserResponse>> = userService.findUsersWithoutDevices()
+    fun findUsersWithoutDevices(): Flux<UserResponse> = userService.findUsersWithoutDevices()
 
     @GetMapping(params = ["deviceId"])
-    fun findUsersWithSpecificDevice(@RequestParam("deviceId") deviceId: String): Mono<List<UserResponse>> =
+    fun findUsersWithSpecificDevice(@RequestParam("deviceId") deviceId: String): Flux<UserResponse> =
         userService.findsUsersWithSpecificDevice(deviceId)
 
     @GetMapping(params = ["role"])
-    fun findUsersWithSpecificRole(@RequestParam("role") role: MongoUser.MongoUserRole): Mono<List<UserResponse>> =
+    fun findUsersWithSpecificRole(@RequestParam("role") role: MongoUser.MongoUserRole): Flux<UserResponse> =
         userService.findUsersWithSpecificRole(role)
 
     @GetMapping(params = ["offset", "limit"], value = ["/offsetPagination"])

@@ -12,6 +12,7 @@ import com.sushkevych.securitydevices.repository.DeviceCacheableRepository
 import com.sushkevych.securitydevices.service.DeviceService
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Service
@@ -24,10 +25,9 @@ class DeviceServiceImpl(
             .switchIfEmpty(Mono.error(NotFoundException(message = "Device with ID $deviceId not found")))
             .map { it.toResponse() }
 
-    override fun getAllDevices(): Mono<List<DeviceResponse>> =
+    override fun getAllDevices(): Flux<DeviceResponse> =
         deviceCacheableRepository.findAll()
             .map (MongoDevice::toResponse)
-            .collectList()
 
     override fun saveDevice(deviceRequest: DeviceRequest): Mono<DeviceResponse> =
         deviceCacheableRepository.save(deviceRequest.toEntity())

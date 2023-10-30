@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.ResponseStatus
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @RestController
@@ -23,7 +24,7 @@ class DeviceController(private val deviceService: DeviceService) {
     fun getDeviceById(@PathVariable deviceId: String): Mono<DeviceResponse> = deviceService.getDeviceById(deviceId)
 
     @GetMapping
-    fun getAllDevices(): Mono<List<DeviceResponse>> = deviceService.getAllDevices()
+    fun getAllDevices(): Flux<DeviceResponse> = deviceService.getAllDevices()
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
