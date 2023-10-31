@@ -92,6 +92,7 @@ class DeviceAuthorizationInvocationHandler(
     private fun createNewDeviceStatus(userDeviceId: String): Mono<MongoDeviceStatus> =
         deviceStatusRepository.save(
             MongoDeviceStatus(
+                id = null,
                 userDeviceId = userDeviceId,
                 status = MongoDeviceStatus.MongoDeviceStatusType.AUTHORIZATION,
                 batteryLevel = null,

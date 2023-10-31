@@ -60,8 +60,7 @@ class UserMongoRepositoryImpl(
             .filter { it?.role == MongoUser.MongoUserRole.OWNER }
             .map { it?.userDeviceId?.toHexString() }
             .toList()
-
-        val query = Query(Criteria.where("user_device_id").`in`(devicesToRemove))
+        val query = Query(Criteria.where("userDeviceId").`in`(devicesToRemove))
 
         return reactiveMongoTemplate.remove(query, MongoDeviceStatus::class.java)
     }
