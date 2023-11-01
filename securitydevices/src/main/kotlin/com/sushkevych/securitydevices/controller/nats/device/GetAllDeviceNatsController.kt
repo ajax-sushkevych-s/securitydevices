@@ -24,6 +24,7 @@ class GetAllDeviceNatsController(
 
     override fun handle(request: GetAllDevicesRequest): Mono<GetAllDevicesResponse> {
         return deviceService.getAllDevices()
+            .collectList()
             .map { devices -> buildSuccessResponse(devices.map { it.toProtoDevice() }) }
             .onErrorResume { exception ->
                 buildFailureResponse(
@@ -40,7 +41,6 @@ class GetAllDeviceNatsController(
 
     private fun buildFailureResponse(exception: String, message: String): GetAllDevicesResponse =
         GetAllDevicesResponse.newBuilder().apply {
-            failureBuilder
-                .setMessage("Devices find failed by $exception: $message")
+            failureBuilder.setMessage("Devices find failed by $exception: $message")
         }.build()
 }

@@ -1,10 +1,8 @@
 package com.sushkevych.internalapi
 
+import com.sushkevych.internalapi.MessageDestinations.REQUEST_PREFIX
+
 object NatsSubject {
-    private const val REQUEST_PREFIX = "com.sushkevych.securitydevices.input.request"
-
-    private const val EVENT_PREFIX = "com.sushkevych.securitydevices.output.pubsub"
-
     object DeviceRequest {
         private const val DEVICE_PREFIX = "$REQUEST_PREFIX.device"
 
@@ -13,14 +11,5 @@ object NatsSubject {
         const val GET_ALL = "$DEVICE_PREFIX.get_all"
         const val UPDATE = "$DEVICE_PREFIX.update"
         const val DELETE = "$DEVICE_PREFIX.delete"
-    }
-
-    object DeviceEvent {
-        private const val DEVICE_PREFIX = "$EVENT_PREFIX.device"
-
-        const val UPDATED = "updated"
-
-        fun createDeviceEventSubject(deviceId: String, eventType: String): String =
-            "$DEVICE_PREFIX.$deviceId.$eventType"
     }
 }

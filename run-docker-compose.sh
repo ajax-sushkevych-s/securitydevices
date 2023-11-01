@@ -2,4 +2,4 @@
 
 ./gradlew assemble
 
-docker-compose up secutiry-app --build --force-recreate
+docker-compose up security-devices-app --build --force-recreate

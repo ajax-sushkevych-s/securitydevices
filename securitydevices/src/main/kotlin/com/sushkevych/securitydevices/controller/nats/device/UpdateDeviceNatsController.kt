@@ -1,8 +1,8 @@
 package com.sushkevych.securitydevices.controller.nats.device
 
 import com.google.protobuf.Parser
-import com.sushkevych.internalapi.NatsSubject.DeviceEvent.UPDATED
-import com.sushkevych.internalapi.NatsSubject.DeviceEvent.createDeviceEventSubject
+import com.sushkevych.internalapi.DeviceEvent.UPDATED
+import com.sushkevych.internalapi.DeviceEvent.createDeviceEventNatsSubject
 import com.sushkevych.internalapi.NatsSubject.DeviceRequest.UPDATE
 import com.sushkevych.securitydevices.commonmodels.device.Device
 import com.sushkevych.securitydevices.controller.nats.NatsController
@@ -50,7 +50,7 @@ class UpdateDeviceNatsController(
         }.build()
 
     private fun publishUpdatedEvent(updatedDevice: Device) {
-        val updateEventSubject = createDeviceEventSubject(updatedDevice.id, UPDATED)
+        val updateEventSubject = createDeviceEventNatsSubject(updatedDevice.id, UPDATED)
 
         val eventMessage = DeviceUpdatedEvent.newBuilder().apply {
             device = updatedDevice

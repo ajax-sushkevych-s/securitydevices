@@ -1,17 +1,29 @@
 spring:
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
   data:
     mongodb:
       uri: mongodb://root:root@mongo-security-devices:27017/mongo-db?authSource=admin
 
+    redis:
+      host: redis-security-devices
+      key:
+        prefix:
+          device-key-
+      ttl:
+        minutes: 5
+
+  kafka:
+    bootstrap-servers: http://kafka-security-devices:29092
+    properties:
+      schema.registry.url: http://schema-registry-security-devices:8081
+
 nats:
   url: "nats://nats-security-devices:4222"
 
-redis:
-  port: "6379"
-  host: "redis-security-devices"
-  ttl:
-    minutes: 5
-  key:
-    prefix: device-key-
+grpc:
+  server:
+    port: 9091
+    security:
+      enabled: false

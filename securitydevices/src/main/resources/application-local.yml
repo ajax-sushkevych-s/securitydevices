@@ -1,17 +1,29 @@
 spring:
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
   data:
     mongodb:
       uri: mongodb://root:root@localhost:27017/mongo-db?authSource=admin
 
+    redis:
+      host: localhost
+      key:
+        prefix:
+          device-key-
+      ttl:
+        minutes: 5
+
+  kafka:
+    bootstrap-servers: http://localhost:9092
+    properties:
+      schema.registry.url: http://localhost:8081
+
 nats:
   url: "nats://localhost:4222"
 
-redis:
-  port: "6379"
-  host: "localhost"
-  ttl:
-    minutes: 5
-  key:
-    prefix: device-key-
+grpc:
+  server:
+    port: 9091
+    security:
+      enabled: false
