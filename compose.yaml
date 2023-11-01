@@ -70,11 +70,29 @@ services:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka-security-devices:29092
 
-  security-devices-app:
+  security-devices-app-1:
     build:
       context: .
     ports:
       - "8080:8080"
+      - "9090:9091"
+    depends_on:
+      nats-security-devices:
+        condition: service_started
+      redis-security-devices:
+        condition: service_started
+      mongo-security-devices:
+        condition: service_healthy
+      kafka-security-devices:
+        condition: service_started
+      schema-registry-security-devices:
+        condition: service_started
+
+  security-devices-app-2:
+    build:
+      context: .
+    ports:
+      - "8082:8080"
       - "9091:9091"
     depends_on:
       nats-security-devices:

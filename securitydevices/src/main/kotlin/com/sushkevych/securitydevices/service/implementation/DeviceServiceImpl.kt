@@ -27,7 +27,7 @@ class DeviceServiceImpl(
 
     override fun getAllDevices(): Flux<DeviceResponse> =
         deviceCacheableRepository.findAll()
-            .map (MongoDevice::toResponse)
+            .map(MongoDevice::toResponse)
 
     override fun saveDevice(deviceRequest: DeviceRequest): Mono<DeviceResponse> =
         deviceCacheableRepository.save(deviceRequest.toEntity())
@@ -35,11 +35,11 @@ class DeviceServiceImpl(
 
     override fun updateDevice(deviceRequest: DeviceRequest): Mono<DeviceResponse> =
         deviceCacheableRepository.update(deviceRequest.toEntity())
-            .doOnNext {
+            .flatMap {
                 deviceKafkaProducer.sendDeviceUpdatedEventToKafka(it.toResponse().toProtoDevice())
+                    .thenReturn(it.toResponse())
             }
             .switchIfEmpty(Mono.error(NotFoundException(message = "Device with ID ${deviceRequest.id} not found")))
-            .map { it.toResponse() }
 
     override fun deleteDevice(deviceId: String) =
         deviceCacheableRepository.deleteById(ObjectId(deviceId))
