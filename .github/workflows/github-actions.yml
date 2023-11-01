@@ -28,7 +28,7 @@ jobs:
         run: ./gradlew assemble
 
       - name: Run Docker Compose
-        run: docker compose up --build --force-recreate -d security-devices-app-1
+        run: docker compose -f compose.yaml up --build --force-recreate -d security-devices-app-1
 
       - name: Shutdown
         run: docker compose down
