@@ -15,8 +15,8 @@ services:
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
-      timeout: 1s
-      retries: 5
+      timeout: 10s
+      retries: 10
 
   nats-security-devices:
     image: nats:2.9.23
