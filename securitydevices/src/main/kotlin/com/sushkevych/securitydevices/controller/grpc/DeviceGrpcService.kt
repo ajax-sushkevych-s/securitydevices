@@ -10,8 +10,8 @@ import com.sushkevych.securitydevices.request.device.get_all.proto.GetAllDevices
 import com.sushkevych.securitydevices.request.device.get_all.proto.GetAllDevicesResponse
 import com.sushkevych.securitydevices.request.device.get_by_id.proto.GetByIdDeviceRequest
 import com.sushkevych.securitydevices.request.device.get_by_id.proto.GetByIdDeviceResponse
-import com.sushkevych.securitydevices.request.device.get_by_id_updated.proto.GetByIdUpdatedRequest
-import com.sushkevych.securitydevices.request.device.get_by_id_updated.proto.GetByIdUpdatedResponse
+import com.sushkevych.securitydevices.request.device.stream_by_id.proto.StreamByIdRequest
+import com.sushkevych.securitydevices.request.device.stream_by_id.proto.StreamByIdResponse
 import com.sushkevych.securitydevices.service.DeviceService
 import net.devh.boot.grpc.server.service.GrpcService
 import reactor.core.publisher.Flux
@@ -31,8 +31,8 @@ class DeviceGrpcService(
     override fun getById(request: Mono<GetByIdDeviceRequest>): Mono<GetByIdDeviceResponse> =
         request.flatMap { handleGetById(it) }
 
-    override fun streamById(request: Mono<GetByIdUpdatedRequest>): Flux<GetByIdUpdatedResponse> =
-        request.flatMapMany { handleGetByIdUpdated(it) }
+    override fun streamById(request: Mono<StreamByIdRequest>): Flux<StreamByIdResponse> =
+        request.flatMapMany { handleStreamById(it) }
 
     private fun handleGetById(request: GetByIdDeviceRequest): Mono<GetByIdDeviceResponse> =
         deviceService.getDeviceById(request.deviceId)
@@ -56,15 +56,15 @@ class DeviceGrpcService(
                 ).toMono()
             }
 
-    private fun handleGetByIdUpdated(request: GetByIdUpdatedRequest): Flux<GetByIdUpdatedResponse> =
+    private fun handleStreamById(request: StreamByIdRequest): Flux<StreamByIdResponse> =
         deviceService.getDeviceById(request.deviceId)
             .flatMapMany { initDeviceState ->
                 deviceEventNatsService.subscribeToEvents(request.deviceId, DeviceEvent.UPDATED)
-                    .map { buildSuccessResponseGetByIdEvent(it.device) }
-                    .startWith(buildSuccessResponseGetByIdEvent(initDeviceState.toProtoDevice()))
+                    .map { buildSuccessResponseStreamById(it.device) }
+                    .startWith(buildSuccessResponseStreamById(initDeviceState.toProtoDevice()))
             }
             .onErrorResume { exception ->
-                buildFailureResponseGetByIdEvent(
+                buildFailureResponseStreamById(
                     exception.javaClass.simpleName,
                     exception.toString()
                 ).toMono()
@@ -90,13 +90,13 @@ class DeviceGrpcService(
             failureBuilder.setMessage("Devices find failed by $exception: $message")
         }.build()
 
-    private fun buildSuccessResponseGetByIdEvent(device: Device): GetByIdUpdatedResponse =
-        GetByIdUpdatedResponse.newBuilder().apply {
+    private fun buildSuccessResponseStreamById(device: Device): StreamByIdResponse =
+        StreamByIdResponse.newBuilder().apply {
             successBuilder.setDevice(device)
         }.build()
 
-    private fun buildFailureResponseGetByIdEvent(exception: String, message: String): GetByIdUpdatedResponse =
-        GetByIdUpdatedResponse.newBuilder().apply {
+    private fun buildFailureResponseStreamById(exception: String, message: String): StreamByIdResponse =
+        StreamByIdResponse.newBuilder().apply {
             failureBuilder.setMessage("Device find by id failed by $exception: $message")
         }.build()
 }

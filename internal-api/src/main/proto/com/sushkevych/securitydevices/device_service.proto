@@ -2,7 +2,7 @@ package com.sushkevych.securitydevices;
 
 import "com/sushkevych/securitydevices/input/reqreply/device/get_by_id.proto";
 import "com/sushkevych/securitydevices/input/reqreply/device/get_all.proto";
-import "com/sushkevych/securitydevices/input/reqreply/device/get_by_id_updated.proto";
+import "com/sushkevych/securitydevices/input/reqreply/device/stream_by_id.proto";
 
 service DeviceService {
 
@@ -12,6 +12,6 @@ service DeviceService {
   rpc getById(request.device.get_by_id.proto.GetByIdDeviceRequest)
       returns (request.device.get_by_id.proto.GetByIdDeviceResponse);
 
-  rpc streamById(request.device.get_by_id_updated.proto.GetByIdUpdatedRequest)
-      returns (stream request.device.get_by_id_updated.proto.GetByIdUpdatedResponse);
+  rpc streamById(request.device.stream_by_id.proto.StreamByIdRequest)
+      returns (stream request.device.stream_by_id.proto.StreamByIdResponse);
 }
