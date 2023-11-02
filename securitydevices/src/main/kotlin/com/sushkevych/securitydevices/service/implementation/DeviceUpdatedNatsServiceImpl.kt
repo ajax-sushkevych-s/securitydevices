@@ -17,12 +17,17 @@ class DeviceUpdatedNatsServiceImpl(
 
     override val parser: Parser<DeviceUpdatedEvent> = DeviceUpdatedEvent.parser()
 
-    override fun handleEvent(deviceId: String, eventType: String): Flux<DeviceUpdatedEvent> =
+    private val dispatcher = connection.createDispatcher()
+
+    override fun subscribeToEvents(deviceId: String, eventType: String): Flux<DeviceUpdatedEvent> =
         Flux.create { sink ->
-            connection.createDispatcher { message ->
-                val parsedData = parser.parseFrom(message.data)
-                sink.next(parsedData)
-            }.apply { subscribe(DeviceEvent.createDeviceEventNatsSubject(deviceId, eventType)) }
+            dispatcher.apply {
+                subscribe(DeviceEvent.createDeviceEventNatsSubject(deviceId, eventType))
+                { message ->
+                    val parsedData = parser.parseFrom(message.data)
+                    sink.next(parsedData)
+                }
+            }
         }
 
     override fun publishEvent(updatedDevice: Device) {

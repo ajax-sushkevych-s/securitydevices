@@ -31,7 +31,7 @@ class DeviceGrpcService(
     override fun getById(request: Mono<GetByIdDeviceRequest>): Mono<GetByIdDeviceResponse> =
         request.flatMap { handleGetById(it) }
 
-    override fun getByIdUpdated(request: Mono<GetByIdUpdatedRequest>): Flux<GetByIdUpdatedResponse> =
+    override fun streamById(request: Mono<GetByIdUpdatedRequest>): Flux<GetByIdUpdatedResponse> =
         request.flatMapMany { handleGetByIdUpdated(it) }
 
     private fun handleGetById(request: GetByIdDeviceRequest): Mono<GetByIdDeviceResponse> =
@@ -57,8 +57,12 @@ class DeviceGrpcService(
             }
 
     private fun handleGetByIdUpdated(request: GetByIdUpdatedRequest): Flux<GetByIdUpdatedResponse> =
-        deviceEventNatsService.handleEvent(request.deviceId, DeviceEvent.UPDATED)
-            .map { buildSuccessResponseGetByIdEvent(it.device) }
+        deviceService.getDeviceById(request.deviceId)
+            .flatMapMany { initDeviceState ->
+                deviceEventNatsService.subscribeToEvents(request.deviceId, DeviceEvent.UPDATED)
+                    .map { buildSuccessResponseGetByIdEvent(it.device) }
+                    .startWith(buildSuccessResponseGetByIdEvent(initDeviceState.toProtoDevice()))
+            }
             .onErrorResume { exception ->
                 buildFailureResponseGetByIdEvent(
                     exception.javaClass.simpleName,

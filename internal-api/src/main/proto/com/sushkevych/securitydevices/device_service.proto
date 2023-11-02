@@ -12,6 +12,6 @@ service DeviceService {
   rpc getById(request.device.get_by_id.proto.GetByIdDeviceRequest)
       returns (request.device.get_by_id.proto.GetByIdDeviceResponse);
 
-  rpc getByIdUpdated(request.device.get_by_id_updated.proto.GetByIdUpdatedRequest)
+  rpc streamById(request.device.get_by_id_updated.proto.GetByIdUpdatedRequest)
       returns (stream request.device.get_by_id_updated.proto.GetByIdUpdatedResponse);
 }

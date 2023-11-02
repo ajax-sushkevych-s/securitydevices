@@ -9,7 +9,7 @@ interface DeviceEventNatsService<EventT : GeneratedMessageV3> {
 
     val parser: Parser<EventT>
 
-    fun handleEvent(deviceId: String, eventType: String): Flux<EventT>
+    fun subscribeToEvents(deviceId: String, eventType: String): Flux<EventT>
 
     fun publishEvent(updatedDevice: Device)
 }

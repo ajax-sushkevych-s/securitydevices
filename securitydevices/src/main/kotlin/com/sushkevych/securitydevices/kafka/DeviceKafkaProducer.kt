@@ -18,9 +18,9 @@ class DeviceKafkaProducer(
     fun sendDeviceUpdatedEventToKafka(deviceProto: Device): Mono<Unit> =
         Mono.fromSupplier { deviceProto.mapToDeviceUpdatedEvent() }
             .flatMap {
-                kafkaSenderDeviceUpdatedEvent.send(buildKafkaUpdatedMessage(it))
-                    .then(Unit.toMono())
+                kafkaSenderDeviceUpdatedEvent.send(buildKafkaUpdatedMessage(it)).next()
             }
+            .thenReturn(Unit)
 
     private fun buildKafkaUpdatedMessage(event: DeviceUpdatedEvent) =
         SenderRecord.create(
