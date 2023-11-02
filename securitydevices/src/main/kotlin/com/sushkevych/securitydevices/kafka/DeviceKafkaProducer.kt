@@ -2,9 +2,11 @@ package com.sushkevych.securitydevices.kafka
 
 import com.sushkevych.internalapi.DeviceEvent
 import com.sushkevych.securitydevices.commonmodels.device.Device
+import com.sushkevych.securitydevices.mappers.mapToDeviceUpdatedEvent
 import com.sushkevych.securitydevices.output.device.update.proto.DeviceUpdatedEvent
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
 import reactor.kafka.sender.KafkaSender
 import reactor.kafka.sender.SenderRecord
 import reactor.kotlin.core.publisher.toMono
@@ -13,18 +15,20 @@ import reactor.kotlin.core.publisher.toMono
 class DeviceKafkaProducer(
     private val kafkaSenderDeviceUpdatedEvent: KafkaSender<String, DeviceUpdatedEvent>
 ) {
-    fun sendDeviceUpdatedEventToKafka(deviceProto: Device) {
-        val deviceUpdatedEvent = DeviceUpdatedEvent.newBuilder().apply {
-            device = deviceProto
-        }.build()
-        val senderRecord = SenderRecord.create(
+    fun sendDeviceUpdatedEventToKafka(deviceProto: Device): Mono<Unit> =
+        Mono.fromSupplier { deviceProto.mapToDeviceUpdatedEvent() }
+            .flatMap {
+                kafkaSenderDeviceUpdatedEvent.send(buildKafkaUpdatedMessage(it)).next()
+            }
+            .thenReturn(Unit)
+
+    private fun buildKafkaUpdatedMessage(event: DeviceUpdatedEvent) =
+        SenderRecord.create(
             ProducerRecord(
                 DeviceEvent.createDeviceEventKafkaTopic(DeviceEvent.UPDATED),
-                deviceProto.id,
-                deviceUpdatedEvent
+                event.device.id,
+                event
             ),
             null
-        )
-        kafkaSenderDeviceUpdatedEvent.send(senderRecord.toMono()).subscribe()
-    }
+        ).toMono()
 }

@@ -10,6 +10,7 @@ import com.sushkevych.securitydevices.kafka.DeviceKafkaProducer
 import com.sushkevych.securitydevices.model.MongoDevice
 import com.sushkevych.securitydevices.repository.DeviceCacheableRepository
 import com.sushkevych.securitydevices.service.DeviceService
+import com.sushkevych.securitydevices.utils.doMonoOnNext
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
@@ -27,7 +28,7 @@ class DeviceServiceImpl(
 
     override fun getAllDevices(): Flux<DeviceResponse> =
         deviceCacheableRepository.findAll()
-            .map (MongoDevice::toResponse)
+            .map(MongoDevice::toResponse)
 
     override fun saveDevice(deviceRequest: DeviceRequest): Mono<DeviceResponse> =
         deviceCacheableRepository.save(deviceRequest.toEntity())
@@ -35,11 +36,9 @@ class DeviceServiceImpl(
 
     override fun updateDevice(deviceRequest: DeviceRequest): Mono<DeviceResponse> =
         deviceCacheableRepository.update(deviceRequest.toEntity())
-            .doOnNext {
-                deviceKafkaProducer.sendDeviceUpdatedEventToKafka(it.toResponse().toProtoDevice())
-            }
-            .switchIfEmpty(Mono.error(NotFoundException(message = "Device with ID ${deviceRequest.id} not found")))
+            .doMonoOnNext { deviceKafkaProducer.sendDeviceUpdatedEventToKafka(it.toResponse().toProtoDevice()) }
             .map { it.toResponse() }
+            .switchIfEmpty(Mono.error(NotFoundException(message = "Device with ID ${deviceRequest.id} not found")))
 
     override fun deleteDevice(deviceId: String) =
         deviceCacheableRepository.deleteById(ObjectId(deviceId))

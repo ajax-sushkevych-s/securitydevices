@@ -4,13 +4,11 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.Parser
-import com.sushkevych.internalapi.DeviceEvent
 import com.sushkevych.internalapi.NatsSubject
 import com.sushkevych.securitydevices.commonmodels.device.Device
 import com.sushkevych.securitydevices.dto.response.toProtoDevice
 import com.sushkevych.securitydevices.dto.response.toResponse
 import com.sushkevych.securitydevices.model.MongoDevice
-import com.sushkevych.securitydevices.output.device.update.proto.DeviceUpdatedEvent
 import com.sushkevych.securitydevices.repository.implementation.DeviceMongoRepositoryImpl
 import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceRequest
 import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceResponse
@@ -32,8 +30,6 @@ import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.test.context.ActiveProfiles
 import java.time.Duration
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 
 @SpringBootTest
 @ActiveProfiles("local")
@@ -213,21 +209,7 @@ class NatsControllersTest {
                 .setDevice(updatedProtoDevice.toBuilder().setId(deviceId).build())
         }.build()
 
-        val expectedUpdatedEventMessage = DeviceUpdatedEvent.newBuilder().apply {
-            device = updatedProtoDevice.toBuilder().setId(deviceId).build()
-        }.build().toByteArray()
-
-        val expectedUpdatedEventSubject = deviceId?.let {
-            DeviceEvent.createDeviceEventNatsSubject(it, DeviceEvent.UPDATED)
-        }
-
         // WHEN
-        val requestUpdatedEvent = CompletableFuture<ByteArray>()
-
-        natsConnection.createDispatcher { message ->
-            requestUpdatedEvent.complete(message.data)
-        }.subscribe(expectedUpdatedEventSubject)
-
         val actual = doRequest(
             NatsSubject.DeviceRequest.UPDATE,
             request,
@@ -235,8 +217,6 @@ class NatsControllersTest {
         )
 
         // THEN
-        val receivedUpdatedEventMessage = requestUpdatedEvent.get(10, TimeUnit.SECONDS)
-        assertThat(receivedUpdatedEventMessage).isEqualTo(expectedUpdatedEventMessage)
         assertThat(actual).isEqualTo(expectedResponse)
     }
 

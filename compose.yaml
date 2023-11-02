@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 
 services:
   mongo-security-devices:
@@ -14,19 +14,14 @@ services:
       - MONGO_INITDB_DATABASE=mongo-db
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 1s
-      timeout: 1s
-      retries: 5
+      interval: 10s
+      timeout: 10s
+      retries: 10
 
   nats-security-devices:
     image: nats:2.9.23
     ports:
       - "4222:4222"
-    healthcheck:
-      test: ["CMD", "nats", "ping"]
-      interval: 1s
-      timeout: 1s
-      retries: 5
 
   redis-security-devices:
     image: redis:alpine3.18
@@ -70,11 +65,29 @@ services:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka-security-devices:29092
 
-  security-devices-app:
+  security-devices-app-1:
     build:
       context: .
     ports:
       - "8080:8080"
+      - "9090:9091"
+    depends_on:
+      nats-security-devices:
+        condition: service_started
+      redis-security-devices:
+        condition: service_started
+      mongo-security-devices:
+        condition: service_healthy
+      kafka-security-devices:
+        condition: service_started
+      schema-registry-security-devices:
+        condition: service_started
+
+  security-devices-app-2:
+    build:
+      context: .
+    ports:
+      - "8082:8080"
       - "9091:9091"
     depends_on:
       nats-security-devices:
