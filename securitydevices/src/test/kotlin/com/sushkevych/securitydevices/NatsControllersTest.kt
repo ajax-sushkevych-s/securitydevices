@@ -22,12 +22,14 @@ import com.sushkevych.securitydevices.request.device.update.proto.UpdateDeviceRe
 import com.sushkevych.securitydevices.request.device.update.proto.UpdateDeviceResponse
 import io.nats.client.Connection
 import org.bson.types.ObjectId
-import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
-import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.dropCollection
+import org.springframework.data.redis.core.ReactiveRedisTemplate
+import org.springframework.data.redis.core.ScanOptions
 import org.springframework.test.context.ActiveProfiles
 import java.time.Duration
 
@@ -42,11 +44,22 @@ class NatsControllersTest {
     private lateinit var reactiveMongoTemplate: ReactiveMongoTemplate
 
     @Autowired
+    private lateinit var reactiveRedisTemplate: ReactiveRedisTemplate<String, MongoDevice>
+
+    @Autowired
     private lateinit var deviceRepository: DeviceMongoRepositoryImpl
 
-    @AfterEach
-    fun cleanDB() {
-        reactiveMongoTemplate.remove(Query(), MongoDevice::class.java).block()
+    @BeforeEach
+    fun clean() {
+        reactiveMongoTemplate.dropCollection<MongoDevice>().block()
+        reactiveRedisTemplate.scan(
+            ScanOptions
+                .scanOptions()
+                .match("*")
+                .build()
+        ).flatMap { reactiveRedisTemplate.delete(it) }
+            .collectList()
+            .block()
     }
 
     @Test
@@ -54,7 +67,7 @@ class NatsControllersTest {
         // GIVEN
         val save = deviceRepository.save(
             MongoDevice(
-                id =  null,
+                id = null,
                 name = "Test Device",
                 description = "Test Description",
                 type = "Test Type",
