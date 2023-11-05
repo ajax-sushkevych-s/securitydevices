@@ -21,7 +21,7 @@ fun MongoUser.toUser(): User {
     )
 }
 
-private fun mapUserRole(mongoUserRole: MongoUser.MongoUserRole): User.UserRole? {
+private fun mapUserRole(mongoUserRole: MongoUser.MongoUserRole): User.UserRole {
     return when (mongoUserRole) {
         MongoUser.MongoUserRole.OWNER -> User.UserRole.OWNER
         MongoUser.MongoUserRole.VIEWER -> User.UserRole.VIEWER

@@ -5,14 +5,10 @@ import com.sushkevych.securitydevices.core.infrastructure.annotation.DeviceAutho
 import com.sushkevych.securitydevices.user.application.port.UserRepository
 import com.sushkevych.securitydevices.user.application.port.UserService
 import com.sushkevych.securitydevices.user.domain.User
-import com.sushkevych.securitydevices.user.infrastructure.dto.response.CursorPaginateResponse
-import com.sushkevych.securitydevices.user.infrastructure.dto.response.OffsetPaginateResponse
-import com.sushkevych.securitydevices.user.infrastructure.mapper.toUserResponse
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toMono
 
 @Service
 class UserServiceImpl(private val userRepository: UserRepository) : UserService {

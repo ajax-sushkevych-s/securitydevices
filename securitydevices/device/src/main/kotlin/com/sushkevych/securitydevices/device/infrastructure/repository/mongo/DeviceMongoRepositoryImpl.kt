@@ -7,7 +7,6 @@ import com.sushkevych.securitydevices.device.infrastructure.mapper.toMongoDevice
 import com.sushkevych.securitydevices.device.infrastructure.repository.entity.MongoDevice
 import com.sushkevych.securitydevices.devicestatus.infrastructure.repository.entity.MongoDeviceStatus
 import com.sushkevych.securitydevices.user.infrastructure.repository.entity.MongoUser
-import org.bson.types.ObjectId
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
