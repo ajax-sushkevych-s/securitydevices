@@ -6,10 +6,10 @@ import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.Parser
 import com.sushkevych.internalapi.NatsSubject
 import com.sushkevych.securitydevices.commonmodels.device.Device
-import com.sushkevych.securitydevices.dto.response.toProtoDevice
-import com.sushkevych.securitydevices.dto.response.toResponse
-import com.sushkevych.securitydevices.model.MongoDevice
-import com.sushkevych.securitydevices.repository.implementation.DeviceMongoRepositoryImpl
+import com.sushkevych.securitydevices.device.infrastructure.mapper.toDevice
+import com.sushkevych.securitydevices.device.infrastructure.mapper.toProtoDevice
+import com.sushkevych.securitydevices.device.infrastructure.repository.entity.MongoDevice
+import com.sushkevych.securitydevices.device.infrastructure.repository.mongo.DeviceMongoRepositoryImpl
 import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceRequest
 import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceResponse
 import com.sushkevych.securitydevices.request.device.delete.proto.DeleteDeviceRequest
@@ -54,15 +54,15 @@ class NatsControllersTest {
         // GIVEN
         val save = deviceRepository.save(
             MongoDevice(
-                ObjectId(),
+                id =  null,
                 name = "Test Device",
                 description = "Test Description",
                 type = "Test Type",
                 attributes = emptyList()
-            )
+            ).toDevice()
         ).block()
 
-        val deviceId = save?.id?.toHexString()
+        val deviceId = save?.id
 
         val protoDevice = Device.newBuilder().apply {
             id = deviceId
@@ -94,7 +94,7 @@ class NatsControllersTest {
         // GIVEN
         val request = GetAllDevicesRequest.getDefaultInstance()
 
-        val protoDeviceList = deviceRepository.findAll().map { it.toResponse().toProtoDevice() }
+        val protoDeviceList = deviceRepository.findAll().map { it.toProtoDevice() }
             .collectList()
             .block()
 
@@ -118,15 +118,15 @@ class NatsControllersTest {
         // GIVEN
         val save = deviceRepository.save(
             MongoDevice(
-                id = ObjectId(),
+                id = null,
                 name = "Deleted Device",
                 description = "Deleted Description",
                 type = "Deleted Type",
                 attributes = emptyList()
-            )
+            ).toDevice()
         ).block()
 
-        val deviceId = save?.id?.toHexString()
+        val deviceId = save?.id
 
         val request = DeleteDeviceRequest.newBuilder().apply {
             setDeviceId(deviceId)
@@ -182,15 +182,15 @@ class NatsControllersTest {
         // GIVEN
         val save = deviceRepository.save(
             MongoDevice(
-                id = ObjectId(),
+                id = null,
                 name = "Device",
                 description = "Description",
                 type = "Type",
                 attributes = emptyList()
-            )
+            ).toDevice()
         ).block()
 
-        val deviceId = save?.id?.toHexString()
+        val deviceId = save?.id
 
         val updatedProtoDevice = Device.newBuilder().apply {
             id = deviceId

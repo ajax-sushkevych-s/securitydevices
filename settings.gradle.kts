@@ -1,6 +1,10 @@
 rootProject.name = "security-app"
 
 include(
+    "securitydevices",
     "internal-api",
-    "securitydevices"
-)
+    "securitydevices:user",
+    "securitydevices:core",
+    "securitydevices:device",
+    "securitydevices:device-status",
+    )
