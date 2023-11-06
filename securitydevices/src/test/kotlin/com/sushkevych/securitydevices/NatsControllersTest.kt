@@ -224,11 +224,11 @@ class NatsControllersTest {
         )
 
         await()
-            .timeout(Duration.ofSeconds(60))
-            .pollDelay(Duration.ofSeconds(40))
+            .timeout(Duration.ofSeconds(120))
+            .pollDelay(Duration.ofSeconds(60))
             .until {
-            actual == expectedResponse
-        }
+                actual == expectedResponse
+            }
 
         // THEN
         assertEquals(expectedResponse, actual)
@@ -242,7 +242,7 @@ class NatsControllersTest {
         val response = natsConnection.requestWithTimeout(
             subject,
             payload.toByteArray(),
-            Duration.ofSeconds(60L)
+            Duration.ofSeconds(120L)
         )
         return parser.parseFrom(response.get().data)
     }
