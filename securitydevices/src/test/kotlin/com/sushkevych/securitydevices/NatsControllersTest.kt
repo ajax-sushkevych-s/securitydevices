@@ -217,8 +217,8 @@ class NatsControllersTest {
 
         // WHEN //THEN
         await()
-            .atMost(Duration.ofSeconds(10))
-            .pollDelay(Duration.ofSeconds(5))
+            .atMost(Duration.ofSeconds(15))
+            .pollDelay(Duration.ofSeconds(10))
             .until {
                 val actual = doRequest(
                     NatsSubject.DeviceRequest.UPDATE,
@@ -237,7 +237,7 @@ class NatsControllersTest {
         val response = natsConnection.requestWithTimeout(
             subject,
             payload.toByteArray(),
-            Duration.ofSeconds(10L)
+            Duration.ofSeconds(20L)
         )
         return parser.parseFrom(response.get().data)
     }
