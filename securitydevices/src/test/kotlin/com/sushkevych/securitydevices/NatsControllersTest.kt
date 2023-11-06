@@ -6,6 +6,7 @@ import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.Parser
 import com.sushkevych.internalapi.NatsSubject
 import com.sushkevych.securitydevices.commonmodels.device.Device
+import com.sushkevych.securitydevices.device.infrastructure.adapters.nats.subscriber.DeviceUpdatedNatsSubscriberImpl
 import com.sushkevych.securitydevices.device.infrastructure.mapper.toDevice
 import com.sushkevych.securitydevices.device.infrastructure.mapper.toProtoDevice
 import com.sushkevych.securitydevices.device.infrastructure.repository.entity.MongoDevice
@@ -24,12 +25,15 @@ import io.nats.client.Connection
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito
+import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.dropCollection
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.test.context.ActiveProfiles
+import reactor.core.publisher.Mono
 import java.time.Duration
 
 @SpringBootTest
@@ -213,6 +217,9 @@ class NatsControllersTest {
             successBuilder
                 .setDevice(updatedProtoDevice.toBuilder().setId(deviceId).build())
         }.build()
+
+        val mockNatsService = Mockito.mock(DeviceUpdatedNatsSubscriberImpl::class.java)
+        `when`(mockNatsService.publishEvent(updatedProtoDevice)).thenReturn(Mono.empty())
 
         // WHEN
         val actual = doRequest(
