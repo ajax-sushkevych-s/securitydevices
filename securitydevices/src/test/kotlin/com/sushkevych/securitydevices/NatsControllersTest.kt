@@ -29,6 +29,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.dropCollection
 import org.springframework.data.redis.core.ReactiveRedisTemplate
+import org.springframework.data.redis.core.ScanOptions
 import org.springframework.test.context.ActiveProfiles
 import java.time.Duration
 
@@ -50,11 +51,16 @@ class NatsControllersTest {
 
     @AfterEach
     fun clean() {
-        reactiveMongoTemplate.dropCollection<MongoDevice>().block()
-        reactiveRedisTemplate.keys("*")
+        reactiveRedisTemplate.scan(
+            ScanOptions
+                .scanOptions()
+                .match("*")
+                .build()
+        )
             .flatMap { reactiveRedisTemplate.delete(it) }
             .collectList()
             .block()
+        reactiveMongoTemplate.dropCollection<MongoDevice>().block()
     }
 
     @Test
