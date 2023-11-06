@@ -6,6 +6,7 @@ import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.Parser
 import com.sushkevych.internalapi.NatsSubject
 import com.sushkevych.securitydevices.commonmodels.device.Device
+import com.sushkevych.securitydevices.device.infrastructure.adapters.nats.subscriber.DeviceUpdatedNatsSubscriberImpl
 import com.sushkevych.securitydevices.device.infrastructure.mapper.toDevice
 import com.sushkevych.securitydevices.device.infrastructure.mapper.toProtoDevice
 import com.sushkevych.securitydevices.device.infrastructure.repository.entity.MongoDevice
@@ -20,6 +21,10 @@ import com.sushkevych.securitydevices.request.device.get_by_id.proto.GetByIdDevi
 import com.sushkevych.securitydevices.request.device.get_by_id.proto.GetByIdDeviceResponse
 import com.sushkevych.securitydevices.request.device.update.proto.UpdateDeviceRequest
 import com.sushkevych.securitydevices.request.device.update.proto.UpdateDeviceResponse
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
 import io.nats.client.Connection
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.AfterEach
@@ -213,6 +218,9 @@ class NatsControllersTest {
             successBuilder
                 .setDevice(updatedProtoDevice.toBuilder().setId(deviceId).build())
         }.build()
+
+        val natsSubscriber = mockk<DeviceUpdatedNatsSubscriberImpl>()
+        every { natsSubscriber.publishEvent(any()) } just Runs
 
         // WHEN
         val actual = doRequest(
