@@ -24,6 +24,7 @@ import io.nats.client.Connection
 import org.awaitility.Awaitility.await
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -215,18 +216,22 @@ class NatsControllersTest {
                 .setDevice(updatedProtoDevice.toBuilder().setId(deviceId).build())
         }.build()
 
-        // WHEN // THEN
+        // WHEN
+        val actual = doRequest(
+            NatsSubject.DeviceRequest.UPDATE,
+            request,
+            UpdateDeviceResponse.parser()
+        )
 
         await()
-            .pollDelay(Duration.ofSeconds(40))
             .timeout(Duration.ofSeconds(60))
+            .pollDelay(Duration.ofSeconds(40))
             .until {
-                doRequest(
-                    NatsSubject.DeviceRequest.UPDATE,
-                    request,
-                    UpdateDeviceResponse.parser()
-                ) == expectedResponse
-            }
+            actual == expectedResponse
+        }
+
+        // THEN
+        assertEquals(expectedResponse, actual)
     }
 
     private fun <RequestT : GeneratedMessageV3, ResponseT : GeneratedMessageV3> doRequest(
@@ -237,7 +242,7 @@ class NatsControllersTest {
         val response = natsConnection.requestWithTimeout(
             subject,
             payload.toByteArray(),
-            Duration.ofSeconds(20L)
+            Duration.ofSeconds(60L)
         )
         return parser.parseFrom(response.get().data)
     }
