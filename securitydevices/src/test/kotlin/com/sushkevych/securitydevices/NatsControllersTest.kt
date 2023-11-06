@@ -233,7 +233,7 @@ class NatsControllersTest {
         val response = natsConnection.requestWithTimeout(
             subject,
             payload.toByteArray(),
-            Duration.ofSeconds(20L)
+            Duration.ofSeconds(5L)
         )
         return parser.parseFrom(response.get().data)
     }
