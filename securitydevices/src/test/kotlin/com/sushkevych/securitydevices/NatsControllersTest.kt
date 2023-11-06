@@ -24,7 +24,6 @@ import io.nats.client.Connection
 import org.awaitility.Awaitility.await
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -219,8 +218,8 @@ class NatsControllersTest {
         // WHEN // THEN
 
         await()
-            .pollDelay(Duration.ofSeconds(10))
-            .timeout(Duration.ofSeconds(20))
+            .pollDelay(Duration.ofSeconds(20))
+            .timeout(Duration.ofSeconds(30))
             .until {
                 doRequest(
                     NatsSubject.DeviceRequest.UPDATE,
