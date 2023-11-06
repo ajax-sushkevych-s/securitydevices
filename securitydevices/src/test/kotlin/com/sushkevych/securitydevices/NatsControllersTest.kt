@@ -30,8 +30,6 @@ import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.dropCollection
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.test.context.ActiveProfiles
-import reactor.core.publisher.Mono
-import reactor.test.StepVerifier
 import java.time.Duration
 
 @SpringBootTest
@@ -224,11 +222,10 @@ class NatsControllersTest {
         )
 
         // THEN
-//        assertThat(actual).isEqualTo(expectedResponse)
-        StepVerifier.create(Mono.fromSupplier { actual })
-            .expectNext(expectedResponse)
-            .thenAwait(Duration.ofSeconds(10))
-            .verifyComplete()
+
+        Thread.sleep(2000)
+
+        assertThat(actual).isEqualTo(expectedResponse)
     }
 
     private fun <RequestT : GeneratedMessageV3, ResponseT : GeneratedMessageV3> doRequest(
