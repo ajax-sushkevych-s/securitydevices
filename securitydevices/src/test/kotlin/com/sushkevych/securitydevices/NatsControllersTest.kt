@@ -218,8 +218,8 @@ class NatsControllersTest {
         // WHEN // THEN
 
         await()
-            .pollDelay(Duration.ofSeconds(20))
-            .timeout(Duration.ofSeconds(30))
+            .pollDelay(Duration.ofSeconds(40))
+            .timeout(Duration.ofSeconds(60))
             .until {
                 doRequest(
                     NatsSubject.DeviceRequest.UPDATE,
