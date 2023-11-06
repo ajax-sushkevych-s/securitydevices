@@ -30,6 +30,9 @@ jobs:
       - name: Run Docker Compose
         run: docker compose -f compose.yaml up --build --force-recreate -d security-devices-app-1
 
+      - name: Stop Docker Container
+        run: docker stop security-app-security-devices-app-1-1
+
       - name: Run tests
         run: ./gradlew test
 
