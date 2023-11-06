@@ -21,6 +21,7 @@ import com.sushkevych.securitydevices.request.device.get_by_id.proto.GetByIdDevi
 import com.sushkevych.securitydevices.request.device.update.proto.UpdateDeviceRequest
 import com.sushkevych.securitydevices.request.device.update.proto.UpdateDeviceResponse
 import io.nats.client.Connection
+import org.awaitility.Awaitility.await
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -214,18 +215,18 @@ class NatsControllersTest {
                 .setDevice(updatedProtoDevice.toBuilder().setId(deviceId).build())
         }.build()
 
-        // WHEN
-        val actual = doRequest(
-            NatsSubject.DeviceRequest.UPDATE,
-            request,
-            UpdateDeviceResponse.parser()
-        )
-
-        // THEN
-
-        Thread.sleep(2000)
-
-        assertThat(actual).isEqualTo(expectedResponse)
+        // WHEN //THEN
+        await()
+            .atMost(Duration.ofSeconds(10))
+            .pollDelay(Duration.ofSeconds(5))
+            .until {
+                val actual = doRequest(
+                    NatsSubject.DeviceRequest.UPDATE,
+                    request,
+                    UpdateDeviceResponse.parser()
+                )
+                actual == expectedResponse
+            }
     }
 
     private fun <RequestT : GeneratedMessageV3, ResponseT : GeneratedMessageV3> doRequest(

@@ -36,6 +36,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test:3.5.11")
     testImplementation("com.willowtreeapps.assertk:assertk:0.27.0")
+    testImplementation("org.awaitility:awaitility:4.1.1")
 }
 
 subprojects {
