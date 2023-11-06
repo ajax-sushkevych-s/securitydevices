@@ -18,7 +18,7 @@ class DeviceKafkaConsumer(
         deviceKafkaConsumer.receiveAutoAck()
             .flatMap { fluxRecord ->
                 fluxRecord
-                    .map {
+                    .flatMap {
                         eventNatsSubscriber.publishEvent(it.value().device)
                     }
             }

@@ -9,6 +9,7 @@ import com.sushkevych.securitydevices.output.device.update.proto.DeviceUpdatedEv
 import io.nats.client.Connection
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @Component
 class DeviceUpdatedNatsSubscriberImpl(
@@ -30,10 +31,10 @@ class DeviceUpdatedNatsSubscriberImpl(
             }
         }
 
-    override fun publishEvent(updatedDevice: Device) {
+    override fun publishEvent(updatedDevice: Device): Mono<Unit> {
         val updateEventSubject = DeviceEvent.createDeviceEventNatsSubject(updatedDevice.id, DeviceEvent.UPDATED)
         val eventMessage = updatedDevice.mapToDeviceUpdatedEvent()
 
-        connection.publish(updateEventSubject, eventMessage.toByteArray())
+        return Mono.fromSupplier { connection.publish(updateEventSubject, eventMessage.toByteArray()) }
     }
 }
