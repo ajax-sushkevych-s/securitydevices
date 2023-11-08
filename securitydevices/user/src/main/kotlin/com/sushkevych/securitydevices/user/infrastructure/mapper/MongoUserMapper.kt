@@ -1,7 +1,7 @@
 package com.sushkevych.securitydevices.user.infrastructure.mapper
 
 import com.sushkevych.securitydevices.user.domain.User
-import com.sushkevych.securitydevices.user.infrastructure.repository.entity.MongoUser
+import com.sushkevych.securitydevices.user.infrastructure.adapters.repository.entity.MongoUser
 
 fun MongoUser.toUser(): User {
     val deviceList = devices.map { device ->

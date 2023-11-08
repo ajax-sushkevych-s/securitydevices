@@ -3,8 +3,8 @@ package com.sushkevych.securitydevices.device.infrastructure.adapters.grpc
 import com.sushkevych.internalapi.DeviceEvent
 import com.sushkevych.securitydevices.ReactorDeviceServiceGrpc
 import com.sushkevych.securitydevices.commonmodels.device.Device
-import com.sushkevych.securitydevices.device.application.port.DeviceEventNatsSubscriber
-import com.sushkevych.securitydevices.device.application.port.DeviceService
+import com.sushkevych.securitydevices.device.infrastructure.adapters.nats.subscriber.DeviceEventNatsSubscriber
+import com.sushkevych.securitydevices.device.application.port.DeviceOperationsInPort
 import com.sushkevych.securitydevices.device.infrastructure.mapper.toProtoDevice
 import com.sushkevych.securitydevices.output.device.update.proto.DeviceUpdatedEvent
 import com.sushkevych.securitydevices.request.device.get_all.proto.GetAllDevicesRequest
@@ -21,7 +21,7 @@ import reactor.kotlin.core.publisher.toMono
 @GrpcService
 @Suppress("TooManyFunctions")
 class DeviceGrpcService(
-    private val deviceService: DeviceService,
+    private val deviceOperations: DeviceOperationsInPort,
     private val deviceEventNatsSubscriber: DeviceEventNatsSubscriber<DeviceUpdatedEvent>
 ) : ReactorDeviceServiceGrpc.DeviceServiceImplBase() {
 
@@ -35,7 +35,7 @@ class DeviceGrpcService(
         request.flatMapMany { handleStreamById(it) }
 
     private fun handleGetById(request: GetByIdDeviceRequest): Mono<GetByIdDeviceResponse> =
-        deviceService.getById(request.deviceId)
+        deviceOperations.getById(request.deviceId)
             .map { buildSuccessResponseGetById(it.toProtoDevice()) }
             .onErrorResume { exception ->
                 buildFailureResponseGetById(
@@ -46,7 +46,7 @@ class DeviceGrpcService(
 
     @Suppress("UnusedParameter")
     private fun handleGetAll(request: GetAllDevicesRequest): Mono<GetAllDevicesResponse> =
-        deviceService.findAll()
+        deviceOperations.findAll()
             .collectList()
             .map { devices -> buildSuccessResponseGetAll(devices.map { it.toProtoDevice() }) }
             .onErrorResume { exception ->
@@ -57,7 +57,7 @@ class DeviceGrpcService(
             }
 
     private fun handleStreamById(request: StreamByIdRequest): Flux<StreamByIdResponse> =
-        deviceService.getById(request.deviceId)
+        deviceOperations.getById(request.deviceId)
             .flatMapMany { initDeviceState ->
                 deviceEventNatsSubscriber.subscribeToEvents(request.deviceId, DeviceEvent.UPDATED)
                     .map { buildSuccessResponseStreamById(it.device) }

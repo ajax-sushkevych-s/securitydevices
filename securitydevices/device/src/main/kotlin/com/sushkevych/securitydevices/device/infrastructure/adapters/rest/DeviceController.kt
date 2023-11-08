@@ -1,6 +1,6 @@
-package com.sushkevych.securitydevices.device.infrastructure.rest
+package com.sushkevych.securitydevices.device.infrastructure.adapters.rest
 
-import com.sushkevych.securitydevices.device.application.port.DeviceService
+import com.sushkevych.securitydevices.device.application.port.DeviceOperationsInPort
 import com.sushkevych.securitydevices.device.infrastructure.dto.request.DeviceRequest
 import com.sushkevych.securitydevices.device.infrastructure.dto.response.DeviceResponse
 import com.sushkevych.securitydevices.device.infrastructure.mapper.toDevice
@@ -21,30 +21,30 @@ import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/api/devices")
-class DeviceController(private val deviceService: DeviceService) {
+class DeviceController(private val deviceOperations: DeviceOperationsInPort) {
     @GetMapping("/{deviceId}")
     fun getDeviceById(@PathVariable deviceId: String): Mono<DeviceResponse> =
-        deviceService.getById(deviceId)
+        deviceOperations.getById(deviceId)
             .map { it.toDeviceResponse() }
 
     @GetMapping
     fun findAllDevices(): Flux<DeviceResponse> =
-        deviceService.findAll()
+        deviceOperations.findAll()
             .map { it.toDeviceResponse() }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun createDevice(@Valid @RequestBody deviceRequest: DeviceRequest): Mono<DeviceResponse> =
-        deviceService.save(deviceRequest.toDevice())
+        deviceOperations.save(deviceRequest.toDevice())
             .map { it.toDeviceResponse() }
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     fun updateDevice(
         @Valid @RequestBody deviceRequest: DeviceRequest
-    ): Mono<DeviceResponse> = deviceService.update(deviceRequest.toDevice())
+    ): Mono<DeviceResponse> = deviceOperations.update(deviceRequest.toDevice())
         .map { it.toDeviceResponse() }
 
     @DeleteMapping("/{deviceId}")
-    fun deleteDevice(@PathVariable deviceId: String): Mono<Unit> = deviceService.delete(deviceId)
+    fun deleteDevice(@PathVariable deviceId: String): Mono<Unit> = deviceOperations.delete(deviceId)
 }

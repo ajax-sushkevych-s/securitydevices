@@ -1,7 +1,7 @@
 package com.sushkevych.securitydevices.device.infrastructure.mapper
 
 import com.sushkevych.securitydevices.device.domain.Device
-import com.sushkevych.securitydevices.device.infrastructure.repository.entity.MongoDevice
+import com.sushkevych.securitydevices.device.infrastructure.adapters.repository.entity.MongoDevice
 
 fun MongoDevice.toDevice(): Device {
     return Device(

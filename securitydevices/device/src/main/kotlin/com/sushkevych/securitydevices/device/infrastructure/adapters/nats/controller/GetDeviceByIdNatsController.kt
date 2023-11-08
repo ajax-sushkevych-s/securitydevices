@@ -3,7 +3,7 @@ package com.sushkevych.securitydevices.device.infrastructure.adapters.nats.contr
 import com.google.protobuf.Parser
 import com.sushkevych.internalapi.NatsSubject.DeviceRequest.GET_BY_ID
 import com.sushkevych.securitydevices.commonmodels.device.Device
-import com.sushkevych.securitydevices.device.application.port.DeviceService
+import com.sushkevych.securitydevices.device.application.port.DeviceOperationsInPort
 import com.sushkevych.securitydevices.device.infrastructure.mapper.toProtoDevice
 import com.sushkevych.securitydevices.request.device.get_by_id.proto.GetByIdDeviceRequest
 import com.sushkevych.securitydevices.request.device.get_by_id.proto.GetByIdDeviceResponse
@@ -16,7 +16,7 @@ import reactor.kotlin.core.publisher.toMono
 @Component
 class GetDeviceByIdNatsController(
     override val connection: Connection,
-    private val deviceService: DeviceService
+    private val deviceOperations: DeviceOperationsInPort
 ) : NatsController<GetByIdDeviceRequest, GetByIdDeviceResponse> {
 
     override val subject = GET_BY_ID
@@ -24,7 +24,7 @@ class GetDeviceByIdNatsController(
 
     override fun handle(request: GetByIdDeviceRequest): Mono<GetByIdDeviceResponse> {
         val deviceId = request.deviceId
-        return deviceService.getById(deviceId)
+        return deviceOperations.getById(deviceId)
             .map { buildSuccessResponse(it.toProtoDevice()) }
             .onErrorResume { exception ->
                 buildFailureResponse(

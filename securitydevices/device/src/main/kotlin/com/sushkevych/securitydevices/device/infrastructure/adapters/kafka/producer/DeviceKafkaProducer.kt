@@ -1,6 +1,7 @@
 package com.sushkevych.securitydevices.device.infrastructure.adapters.kafka.producer
 
 import com.sushkevych.internalapi.DeviceEvent
+import com.sushkevych.securitydevices.device.application.port.DeviceEventProducerOutPort
 import com.sushkevych.securitydevices.device.domain.Device
 import com.sushkevych.securitydevices.device.infrastructure.mapper.mapToDeviceUpdatedEvent
 import com.sushkevych.securitydevices.device.infrastructure.mapper.toProtoDevice
@@ -15,8 +16,8 @@ import reactor.kotlin.core.publisher.toMono
 @Component
 class DeviceKafkaProducer(
     private val kafkaSenderDeviceUpdatedEvent: KafkaSender<String, DeviceUpdatedEvent>
-) {
-    fun sendDeviceUpdatedEventToKafka(device: Device): Mono<Unit> =
+) : DeviceEventProducerOutPort {
+    override fun sendDeviceUpdatedEvent(device: Device): Mono<Unit> =
         Mono.fromSupplier { device.toProtoDevice().mapToDeviceUpdatedEvent() }
             .flatMap {
                 kafkaSenderDeviceUpdatedEvent.send(buildKafkaUpdatedMessage(it)).next()

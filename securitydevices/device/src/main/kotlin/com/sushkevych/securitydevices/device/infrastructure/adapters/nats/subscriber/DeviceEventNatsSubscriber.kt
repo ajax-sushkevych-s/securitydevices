@@ -1,4 +1,4 @@
-package com.sushkevych.securitydevices.device.application.port
+package com.sushkevych.securitydevices.device.infrastructure.adapters.nats.subscriber
 
 import com.google.protobuf.GeneratedMessageV3
 import com.sushkevych.securitydevices.commonmodels.device.Device

@@ -4,7 +4,7 @@ import com.sushkevych.securitydevices.user.domain.User
 import com.sushkevych.securitydevices.user.infrastructure.dto.response.UserDeviceResponse
 import com.sushkevych.securitydevices.user.infrastructure.dto.response.UserResponse
 import com.sushkevych.securitydevices.user.infrastructure.dto.response.UserRoleResponse
-import com.sushkevych.securitydevices.user.infrastructure.repository.entity.MongoUser
+import com.sushkevych.securitydevices.user.infrastructure.adapters.repository.entity.MongoUser
 import org.bson.types.ObjectId
 
 fun User.toMongoUser(): MongoUser {

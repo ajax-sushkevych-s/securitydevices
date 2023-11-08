@@ -8,8 +8,8 @@ import com.sushkevych.internalapi.NatsSubject
 import com.sushkevych.securitydevices.commonmodels.device.Device
 import com.sushkevych.securitydevices.device.infrastructure.mapper.toDevice
 import com.sushkevych.securitydevices.device.infrastructure.mapper.toProtoDevice
-import com.sushkevych.securitydevices.device.infrastructure.repository.entity.MongoDevice
-import com.sushkevych.securitydevices.device.infrastructure.repository.mongo.DeviceMongoRepositoryImpl
+import com.sushkevych.securitydevices.device.infrastructure.adapters.repository.entity.MongoDevice
+import com.sushkevych.securitydevices.device.infrastructure.adapters.repository.mongo.MongoDeviceRepository
 import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceRequest
 import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceResponse
 import com.sushkevych.securitydevices.request.device.delete.proto.DeleteDeviceRequest
@@ -48,7 +48,7 @@ class NatsControllersTest {
     private lateinit var reactiveRedisTemplate: ReactiveRedisTemplate<String, MongoDevice>
 
     @Autowired
-    private lateinit var deviceRepository: DeviceMongoRepositoryImpl
+    private lateinit var deviceRepository: MongoDeviceRepository
 
     @AfterEach
     fun clean() {

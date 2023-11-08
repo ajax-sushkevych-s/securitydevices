@@ -2,8 +2,8 @@ package com.sushkevych.securitydevices.user.application.services
 
 import com.sushkevych.securitydevices.core.application.exception.NotFoundException
 import com.sushkevych.securitydevices.core.infrastructure.annotation.DeviceAuthorization
-import com.sushkevych.securitydevices.user.application.port.UserRepository
-import com.sushkevych.securitydevices.user.application.port.UserService
+import com.sushkevych.securitydevices.user.application.port.UserRepositoryOutPort
+import com.sushkevych.securitydevices.user.application.port.UserOperationsInPort
 import com.sushkevych.securitydevices.user.domain.User
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
@@ -11,7 +11,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Service
-class UserServiceImpl(private val userRepository: UserRepository) : UserService {
+class UserService(private val userRepository: UserRepositoryOutPort) : UserOperationsInPort {
     override fun getById(id: String): Mono<User> =
         userRepository.getById(id)
             .switchIfEmpty(Mono.error(NotFoundException(message = "User with ID $id not found")))

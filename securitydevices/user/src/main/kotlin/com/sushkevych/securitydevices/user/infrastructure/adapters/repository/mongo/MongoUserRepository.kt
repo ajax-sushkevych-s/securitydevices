@@ -1,13 +1,13 @@
-package com.sushkevych.securitydevices.user.infrastructure.repository.mongo
+package com.sushkevych.securitydevices.user.infrastructure.adapters.repository.mongo
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.mongodb.client.result.DeleteResult
 import com.sushkevych.securitydevices.devicestatus.infrastructure.repository.entity.MongoDeviceStatus
-import com.sushkevych.securitydevices.user.application.port.UserRepository
+import com.sushkevych.securitydevices.user.application.port.UserRepositoryOutPort
 import com.sushkevych.securitydevices.user.domain.User
 import com.sushkevych.securitydevices.user.infrastructure.mapper.toMongoUser
 import com.sushkevych.securitydevices.user.infrastructure.mapper.toUser
-import com.sushkevych.securitydevices.user.infrastructure.repository.entity.MongoUser
+import com.sushkevych.securitydevices.user.infrastructure.adapters.repository.entity.MongoUser
 import org.bson.types.ObjectId
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
@@ -24,10 +24,10 @@ import reactor.kotlin.core.publisher.toMono
 
 @Repository
 @Suppress("TooManyFunctions")
-class UserMongoRepositoryImpl(
+class MongoUserRepository(
     private val reactiveMongoTemplate: ReactiveMongoTemplate,
     private val objectMapper: ObjectMapper
-) : UserRepository {
+) : UserRepositoryOutPort {
 
     override fun getById(id: String): Mono<User> =
         reactiveMongoTemplate.findOne(

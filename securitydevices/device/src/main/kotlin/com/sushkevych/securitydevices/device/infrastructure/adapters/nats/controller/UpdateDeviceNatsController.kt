@@ -3,7 +3,7 @@ package com.sushkevych.securitydevices.device.infrastructure.adapters.nats.contr
 import com.google.protobuf.Parser
 import com.sushkevych.internalapi.NatsSubject.DeviceRequest.UPDATE
 import com.sushkevych.securitydevices.commonmodels.device.Device
-import com.sushkevych.securitydevices.device.application.port.DeviceService
+import com.sushkevych.securitydevices.device.application.port.DeviceOperationsInPort
 import com.sushkevych.securitydevices.device.infrastructure.mapper.toDevice
 import com.sushkevych.securitydevices.device.infrastructure.mapper.toProtoDevice
 import com.sushkevych.securitydevices.request.device.update.proto.UpdateDeviceRequest
@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono
 @Component
 class UpdateDeviceNatsController(
     override val connection: Connection,
-    private val deviceService: DeviceService
+    private val deviceOperations: DeviceOperationsInPort
 ) : NatsController<UpdateDeviceRequest, UpdateDeviceResponse> {
 
     override val subject = UPDATE
@@ -24,7 +24,7 @@ class UpdateDeviceNatsController(
 
     override fun handle(request: UpdateDeviceRequest): Mono<UpdateDeviceResponse> {
         val device = request.device.toDevice()
-        return deviceService.update(device)
+        return deviceOperations.update(device)
             .map {
                 buildSuccessResponse(it.toProtoDevice())
             }

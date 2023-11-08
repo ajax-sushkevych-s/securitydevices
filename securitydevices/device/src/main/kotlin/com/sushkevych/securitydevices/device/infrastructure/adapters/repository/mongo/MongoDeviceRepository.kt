@@ -1,12 +1,12 @@
-package com.sushkevych.securitydevices.device.infrastructure.repository.mongo
+package com.sushkevych.securitydevices.device.infrastructure.adapters.repository.mongo
 
-import com.sushkevych.securitydevices.device.application.port.DeviceRepository
+import com.sushkevych.securitydevices.device.application.port.DeviceRepositoryOutPort
 import com.sushkevych.securitydevices.device.domain.Device
 import com.sushkevych.securitydevices.device.infrastructure.mapper.toDevice
 import com.sushkevych.securitydevices.device.infrastructure.mapper.toMongoDevice
-import com.sushkevych.securitydevices.device.infrastructure.repository.entity.MongoDevice
+import com.sushkevych.securitydevices.device.infrastructure.adapters.repository.entity.MongoDevice
 import com.sushkevych.securitydevices.devicestatus.infrastructure.repository.entity.MongoDeviceStatus
-import com.sushkevych.securitydevices.user.infrastructure.repository.entity.MongoUser
+import com.sushkevych.securitydevices.user.infrastructure.adapters.repository.entity.MongoUser
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
@@ -16,9 +16,9 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Repository
-class DeviceMongoRepositoryImpl(
+class MongoDeviceRepository(
     private val reactiveMongoTemplate: ReactiveMongoTemplate
-) : DeviceRepository {
+) : DeviceRepositoryOutPort {
 
     override fun getById(id: String): Mono<Device> =
         reactiveMongoTemplate.findOne(

@@ -1,6 +1,6 @@
 package com.sushkevych.securitydevices.device.infrastructure.configuration.beanpostprocessor
 
-import com.sushkevych.securitydevices.devicestatus.application.port.DeviceStatusRepository
+import com.sushkevych.securitydevices.devicestatus.infrastructure.repository.mongo.DeviceStatusRepositoryOutPort
 import com.sushkevych.securitydevices.devicestatus.infrastructure.repository.entity.MongoDeviceStatus
 import com.sushkevych.securitydevices.core.infrastructure.annotation.DeviceAuthorization
 import com.sushkevych.securitydevices.user.domain.User
@@ -22,7 +22,7 @@ import kotlin.reflect.full.memberFunctions
 class DeviceAuthorizationAnnotationBeanPostProcessor : BeanPostProcessor {
 
     @Autowired
-    private lateinit var deviceStatusRepository: DeviceStatusRepository
+    private lateinit var deviceStatusRepositoryOutPort: DeviceStatusRepositoryOutPort
 
     private val beans = mutableMapOf<String, KClass<*>>()
 
@@ -41,7 +41,7 @@ class DeviceAuthorizationAnnotationBeanPostProcessor : BeanPostProcessor {
             Proxy.newProxyInstance(
                 beanClass.java.classLoader,
                 beanClass.java.interfaces,
-                DeviceAuthorizationInvocationHandler(bean, deviceStatusRepository, beanClass)
+                DeviceAuthorizationInvocationHandler(bean, deviceStatusRepositoryOutPort, beanClass)
             )
         } ?: bean
     }
@@ -49,7 +49,7 @@ class DeviceAuthorizationAnnotationBeanPostProcessor : BeanPostProcessor {
 
 class DeviceAuthorizationInvocationHandler(
     private val bean: Any,
-    private val deviceStatusRepository: DeviceStatusRepository,
+    private val deviceStatusRepositoryOutPort: DeviceStatusRepositoryOutPort,
     private val originalBean: KClass<*>
 ) : InvocationHandler {
 
@@ -87,11 +87,11 @@ class DeviceAuthorizationInvocationHandler(
     }
 
     private fun getDeviceStatusOrCreateNew(userDeviceId: String): Mono<MongoDeviceStatus> =
-        deviceStatusRepository.findByUserDeviceId(userDeviceId)
+        deviceStatusRepositoryOutPort.findByUserDeviceId(userDeviceId)
             .switchIfEmpty(createNewDeviceStatus(userDeviceId))
 
     private fun createNewDeviceStatus(userDeviceId: String): Mono<MongoDeviceStatus> =
-        deviceStatusRepository.save(
+        deviceStatusRepositoryOutPort.save(
             MongoDeviceStatus(
                 id = null,
                 userDeviceId = userDeviceId,

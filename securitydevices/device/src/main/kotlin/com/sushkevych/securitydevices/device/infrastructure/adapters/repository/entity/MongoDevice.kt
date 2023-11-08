@@ -1,6 +1,6 @@
-package com.sushkevych.securitydevices.device.infrastructure.repository.entity
+package com.sushkevych.securitydevices.device.infrastructure.adapters.repository.entity
 
-import com.sushkevych.securitydevices.device.infrastructure.repository.entity.MongoDevice.Companion.COLLECTION_NAME
+import com.sushkevych.securitydevices.device.infrastructure.adapters.repository.entity.MongoDevice.Companion.COLLECTION_NAME
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.TypeAlias
 import org.springframework.data.mongodb.core.mapping.Document

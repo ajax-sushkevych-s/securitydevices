@@ -5,7 +5,7 @@ import com.sushkevych.securitydevices.commonmodels.device.Device as ProtoDevice
 import com.sushkevych.securitydevices.commonmodels.device.DeviceAttribute as ProtoDeviceAttribute
 import com.sushkevych.securitydevices.device.infrastructure.dto.response.DeviceAttributeResponse
 import com.sushkevych.securitydevices.device.infrastructure.dto.response.DeviceResponse
-import com.sushkevych.securitydevices.device.infrastructure.repository.entity.MongoDevice
+import com.sushkevych.securitydevices.device.infrastructure.adapters.repository.entity.MongoDevice
 
 fun Device.toMongoDevice(): MongoDevice {
     return MongoDevice(

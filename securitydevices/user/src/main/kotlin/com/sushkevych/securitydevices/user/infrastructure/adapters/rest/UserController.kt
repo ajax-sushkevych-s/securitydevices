@@ -1,6 +1,6 @@
-package com.sushkevych.securitydevices.user.infrastructure.rest
+package com.sushkevych.securitydevices.user.infrastructure.adapters.rest
 
-import com.sushkevych.securitydevices.user.application.port.UserService
+import com.sushkevych.securitydevices.user.application.port.UserOperationsInPort
 import com.sushkevych.securitydevices.user.infrastructure.dto.request.UserRequest
 import com.sushkevych.securitydevices.user.infrastructure.dto.request.UserRoleRequest
 import com.sushkevych.securitydevices.user.infrastructure.dto.response.CursorPaginateResponse
@@ -27,44 +27,44 @@ import reactor.kotlin.core.publisher.toMono
 
 @RestController
 @RequestMapping("/api/users")
-class UserController(private val userService: UserService) {
+class UserController(private val userOperationsInPort: UserOperationsInPort) {
     @GetMapping("/{userId}")
     fun getUserById(@PathVariable userId: String): Mono<UserResponse> =
-        userService.getById(userId).map { it.toUserResponse() }
+        userOperationsInPort.getById(userId).map { it.toUserResponse() }
 
     @GetMapping
-    fun findAllUsers(): Flux<UserResponse> = userService.findAll().map { it.toUserResponse() }
+    fun findAllUsers(): Flux<UserResponse> = userOperationsInPort.findAll().map { it.toUserResponse() }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun createUser(@Valid @RequestBody userRequest: UserRequest): Mono<UserResponse> =
-        userService.save(userRequest.toUser()).map { it.toUserResponse() }
+        userOperationsInPort.save(userRequest.toUser()).map { it.toUserResponse() }
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     fun updateUser(@Valid @RequestBody userRequest: UserRequest): Mono<UserResponse> =
-        userService.update(userRequest.toUser()).map { it.toUserResponse() }
+        userOperationsInPort.update(userRequest.toUser()).map { it.toUserResponse() }
 
     @DeleteMapping("/{userId}")
-    fun deleteUser(@PathVariable userId: String): Mono<Unit> = userService.delete(userId)
+    fun deleteUser(@PathVariable userId: String): Mono<Unit> = userOperationsInPort.delete(userId)
 
     @GetMapping("/no-devices")
     fun findUsersWithoutDevices(): Flux<UserResponse> =
-        userService.findUsersWithoutDevices().map { it.toUserResponse() }
+        userOperationsInPort.findUsersWithoutDevices().map { it.toUserResponse() }
 
     @GetMapping(params = ["deviceId"])
     fun findUsersWithSpecificDevice(@RequestParam("deviceId") deviceId: String): Flux<UserResponse> =
-        userService.findsUsersWithSpecificDevice(deviceId).map { it.toUserResponse() }
+        userOperationsInPort.findsUsersWithSpecificDevice(deviceId).map { it.toUserResponse() }
 
     @GetMapping(params = ["role"])
     fun findUsersWithSpecificRole(@RequestParam("role") role: UserRoleRequest): Flux<UserResponse> =
-        userService.findUsersWithSpecificRole(role.toUserRole()).map { it.toUserResponse() }
+        userOperationsInPort.findUsersWithSpecificRole(role.toUserRole()).map { it.toUserResponse() }
 
     @GetMapping(params = ["offset", "limit"], value = ["/offsetPagination"])
     fun getUsersByOffsetPagination(
         @RequestParam(defaultValue = "0") offset: Int,
         @RequestParam(defaultValue = "50") limit: Int
-    ): Mono<OffsetPaginateResponse> = userService.getUsersByOffsetPagination(offset, limit)
+    ): Mono<OffsetPaginateResponse> = userOperationsInPort.getUsersByOffsetPagination(offset, limit)
         .flatMap { usersByOffsetPagination ->
             val mappedUsersToResponse = usersByOffsetPagination.first.map { it.toUserResponse() }
             val totalDocuments = usersByOffsetPagination.second
@@ -75,7 +75,7 @@ class UserController(private val userService: UserService) {
     fun getUsersByCursorBasedPagination(
         @RequestParam(name = "pageSize", defaultValue = "50") pageSize: Int,
         @RequestParam(name = "cursor", required = false) cursor: String?
-    ): Mono<CursorPaginateResponse> = userService.getUsersByCursorBasedPagination(pageSize, cursor)
+    ): Mono<CursorPaginateResponse> = userOperationsInPort.getUsersByCursorBasedPagination(pageSize, cursor)
         .flatMap { usersByCursorBasedPagination ->
             val mappedUsersToResponse = usersByCursorBasedPagination.first.map { it.toUserResponse() }
             val totalDocuments = usersByCursorBasedPagination.second

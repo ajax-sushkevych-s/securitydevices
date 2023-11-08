@@ -2,7 +2,7 @@ package com.sushkevych.securitydevices.device.infrastructure.adapters.nats.contr
 
 import com.google.protobuf.Parser
 import com.sushkevych.internalapi.NatsSubject.DeviceRequest.DELETE
-import com.sushkevych.securitydevices.device.application.port.DeviceService
+import com.sushkevych.securitydevices.device.application.port.DeviceOperationsInPort
 import com.sushkevych.securitydevices.request.device.delete.proto.DeleteDeviceRequest
 import com.sushkevych.securitydevices.request.device.delete.proto.DeleteDeviceResponse
 import com.sushkevych.securitydevices.core.infrastructure.adapters.nats.NatsController
@@ -14,7 +14,7 @@ import reactor.kotlin.core.publisher.toMono
 @Component
 class DeleteDeviceNatsController(
     override val connection: Connection,
-    private val deviceService: DeviceService
+    private val deviceOperations: DeviceOperationsInPort
 ) : NatsController<DeleteDeviceRequest, DeleteDeviceResponse> {
 
     override val subject = DELETE
@@ -22,7 +22,7 @@ class DeleteDeviceNatsController(
 
     override fun handle(request: DeleteDeviceRequest): Mono<DeleteDeviceResponse> {
         val deviceId = request.deviceId
-        return deviceService.delete(deviceId)
+        return deviceOperations.delete(deviceId)
             .map { buildSuccessResponse() }
             .onErrorResume { exception ->
                 buildFailureResponse(

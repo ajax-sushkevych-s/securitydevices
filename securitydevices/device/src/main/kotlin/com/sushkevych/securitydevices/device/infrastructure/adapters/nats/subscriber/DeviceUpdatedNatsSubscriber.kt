@@ -3,7 +3,6 @@ package com.sushkevych.securitydevices.device.infrastructure.adapters.nats.subsc
 import com.google.protobuf.Parser
 import com.sushkevych.internalapi.DeviceEvent
 import com.sushkevych.securitydevices.commonmodels.device.Device
-import com.sushkevych.securitydevices.device.application.port.DeviceEventNatsSubscriber
 import com.sushkevych.securitydevices.device.infrastructure.mapper.mapToDeviceUpdatedEvent
 import com.sushkevych.securitydevices.output.device.update.proto.DeviceUpdatedEvent
 import io.nats.client.Connection
@@ -12,7 +11,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Component
-class DeviceUpdatedNatsSubscriberImpl(
+class DeviceUpdatedNatsSubscriber(
     private val connection: Connection
 ) : DeviceEventNatsSubscriber<DeviceUpdatedEvent> {
 

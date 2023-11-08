@@ -1,6 +1,6 @@
 package com.sushkevych.securitydevices.device.infrastructure.adapters.redis.configuration
 
-import com.sushkevych.securitydevices.device.infrastructure.repository.entity.MongoDevice
+import com.sushkevych.securitydevices.device.infrastructure.adapters.repository.entity.MongoDevice
 import com.sushkevych.securitydevices.core.infrastructure.configuration.redis.CoreRedisConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

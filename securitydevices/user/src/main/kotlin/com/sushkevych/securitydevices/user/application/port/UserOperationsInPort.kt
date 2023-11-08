@@ -1,19 +1,25 @@
 package com.sushkevych.securitydevices.user.application.port
 
-import com.sushkevych.securitydevices.core.application.port.CoreRepository
 import com.sushkevych.securitydevices.user.domain.User
-import org.bson.types.ObjectId
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
-interface UserRepository : CoreRepository<User, String> {
-    fun getUserByUserName(username: String): Mono<User>
+interface UserOperationsInPort {
+    fun getById(id: String): Mono<User>
 
-    fun findUsersWithSpecificDevice(deviceId: ObjectId): Flux<User>
+    fun findAll(): Flux<User>
 
-    fun findUsersWithSpecificRole(role: User.UserRole): Flux<User>
+    fun save(entity: User): Mono<User>
+
+    fun update(entity: User): Mono<User>
+
+    fun delete(id: String): Mono<Unit>
 
     fun findUsersWithoutDevices(): Flux<User>
+
+    fun findsUsersWithSpecificDevice(deviceId: String): Flux<User>
+
+    fun findUsersWithSpecificRole(role: User.UserRole): Flux<User>
 
     fun getUsersByOffsetPagination(offset: Int, limit: Int): Mono<Pair<List<User>, Long>>
 

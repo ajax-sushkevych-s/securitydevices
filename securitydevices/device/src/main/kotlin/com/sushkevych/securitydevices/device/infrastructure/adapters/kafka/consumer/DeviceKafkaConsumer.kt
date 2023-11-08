@@ -1,6 +1,6 @@
 package com.sushkevych.securitydevices.device.infrastructure.adapters.kafka.consumer
 
-import com.sushkevych.securitydevices.device.application.port.DeviceEventNatsSubscriber
+import com.sushkevych.securitydevices.device.infrastructure.adapters.nats.subscriber.DeviceEventNatsSubscriber
 import com.sushkevych.securitydevices.output.device.update.proto.DeviceUpdatedEvent
 import jakarta.annotation.PostConstruct
 import org.springframework.stereotype.Component
