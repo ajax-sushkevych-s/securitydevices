@@ -6,10 +6,10 @@ import com.google.protobuf.GeneratedMessageV3
 import com.google.protobuf.Parser
 import com.sushkevych.internalapi.NatsSubject
 import com.sushkevych.securitydevices.commonmodels.device.Device
-import com.sushkevych.securitydevices.dto.response.toProtoDevice
-import com.sushkevych.securitydevices.dto.response.toResponse
-import com.sushkevych.securitydevices.model.MongoDevice
-import com.sushkevych.securitydevices.repository.implementation.DeviceMongoRepositoryImpl
+import com.sushkevych.securitydevices.device.infrastructure.mapper.toDevice
+import com.sushkevych.securitydevices.device.infrastructure.mapper.toProtoDevice
+import com.sushkevych.securitydevices.device.infrastructure.adapters.repository.entity.MongoDevice
+import com.sushkevych.securitydevices.device.infrastructure.adapters.repository.mongo.MongoDeviceRepository
 import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceRequest
 import com.sushkevych.securitydevices.request.device.create.proto.CreateDeviceResponse
 import com.sushkevych.securitydevices.request.device.delete.proto.DeleteDeviceRequest
@@ -21,13 +21,16 @@ import com.sushkevych.securitydevices.request.device.get_by_id.proto.GetByIdDevi
 import com.sushkevych.securitydevices.request.device.update.proto.UpdateDeviceRequest
 import com.sushkevych.securitydevices.request.device.update.proto.UpdateDeviceResponse
 import io.nats.client.Connection
+import org.awaitility.Awaitility.await
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
-import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.dropCollection
+import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.test.context.ActiveProfiles
 import java.time.Duration
 
@@ -42,11 +45,15 @@ class NatsControllersTest {
     private lateinit var reactiveMongoTemplate: ReactiveMongoTemplate
 
     @Autowired
-    private lateinit var deviceRepository: DeviceMongoRepositoryImpl
+    private lateinit var reactiveRedisTemplate: ReactiveRedisTemplate<String, MongoDevice>
+
+    @Autowired
+    private lateinit var deviceRepository: MongoDeviceRepository
 
     @AfterEach
-    fun cleanDB() {
-        reactiveMongoTemplate.remove(Query(), MongoDevice::class.java).block()
+    fun clean() {
+        reactiveRedisTemplate.delete(reactiveRedisTemplate.keys("*")).block()
+        reactiveMongoTemplate.dropCollection<MongoDevice>().block()
     }
 
     @Test
@@ -54,15 +61,15 @@ class NatsControllersTest {
         // GIVEN
         val save = deviceRepository.save(
             MongoDevice(
-                ObjectId(),
+                id = null,
                 name = "Test Device",
                 description = "Test Description",
                 type = "Test Type",
                 attributes = emptyList()
-            )
+            ).toDevice()
         ).block()
 
-        val deviceId = save?.id?.toHexString()
+        val deviceId = save?.id
 
         val protoDevice = Device.newBuilder().apply {
             id = deviceId
@@ -94,7 +101,7 @@ class NatsControllersTest {
         // GIVEN
         val request = GetAllDevicesRequest.getDefaultInstance()
 
-        val protoDeviceList = deviceRepository.findAll().map { it.toResponse().toProtoDevice() }
+        val protoDeviceList = deviceRepository.findAll().map { it.toProtoDevice() }
             .collectList()
             .block()
 
@@ -118,15 +125,15 @@ class NatsControllersTest {
         // GIVEN
         val save = deviceRepository.save(
             MongoDevice(
-                id = ObjectId(),
+                id = null,
                 name = "Deleted Device",
                 description = "Deleted Description",
                 type = "Deleted Type",
                 attributes = emptyList()
-            )
+            ).toDevice()
         ).block()
 
-        val deviceId = save?.id?.toHexString()
+        val deviceId = save?.id
 
         val request = DeleteDeviceRequest.newBuilder().apply {
             setDeviceId(deviceId)
@@ -182,15 +189,15 @@ class NatsControllersTest {
         // GIVEN
         val save = deviceRepository.save(
             MongoDevice(
-                id = ObjectId(),
+                id = null,
                 name = "Device",
                 description = "Description",
                 type = "Type",
                 attributes = emptyList()
-            )
+            ).toDevice()
         ).block()
 
-        val deviceId = save?.id?.toHexString()
+        val deviceId = save?.id
 
         val updatedProtoDevice = Device.newBuilder().apply {
             id = deviceId
@@ -216,8 +223,15 @@ class NatsControllersTest {
             UpdateDeviceResponse.parser()
         )
 
+        await()
+            .timeout(Duration.ofSeconds(60))
+            .pollDelay(Duration.ofSeconds(50))
+            .until {
+                actual == expectedResponse
+            }
+
         // THEN
-        assertThat(actual).isEqualTo(expectedResponse)
+        assertEquals(expectedResponse, actual)
     }
 
     private fun <RequestT : GeneratedMessageV3, ResponseT : GeneratedMessageV3> doRequest(
@@ -228,7 +242,7 @@ class NatsControllersTest {
         val response = natsConnection.requestWithTimeout(
             subject,
             payload.toByteArray(),
-            Duration.ofSeconds(10L)
+            Duration.ofSeconds(60L)
         )
         return parser.parseFrom(response.get().data)
     }

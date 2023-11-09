@@ -1,0 +1,3 @@
+package com.sushkevych.securitydevices.devicestatus.application.port
+
+interface DeviceStatusRepositoryOutPort
