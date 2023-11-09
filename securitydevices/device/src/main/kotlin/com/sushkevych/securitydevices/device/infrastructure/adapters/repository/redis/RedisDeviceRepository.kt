@@ -1,12 +1,13 @@
 package com.sushkevych.securitydevices.device.infrastructure.adapters.repository.redis
 
-import com.sushkevych.securitydevices.device.application.port.DeviceCacheableRepositoryOutPort
 import com.sushkevych.securitydevices.device.application.port.DeviceRepositoryOutPort
 import com.sushkevych.securitydevices.device.domain.Device
 import com.sushkevych.securitydevices.device.infrastructure.mapper.toDevice
 import com.sushkevych.securitydevices.device.infrastructure.mapper.toMongoDevice
 import com.sushkevych.securitydevices.device.infrastructure.adapters.repository.entity.MongoDevice
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Primary
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.data.redis.core.ScanOptions
 import org.springframework.stereotype.Repository
@@ -16,13 +17,14 @@ import reactor.kotlin.core.publisher.switchIfEmpty
 import reactor.kotlin.core.publisher.switchIfEmptyDeferred
 import java.time.Duration
 
+@Primary
 @Repository
 class RedisDeviceRepository(
     private val reactiveRedisTemplate: ReactiveRedisTemplate<String, MongoDevice>,
-    private val deviceRepository: DeviceRepositoryOutPort,
+    @Qualifier("mongoDeviceRepository") private val deviceRepository: DeviceRepositoryOutPort,
     @Value("\${spring.data.redis.ttl.minutes}") private val redisTtlMinutes: String,
     @Value("\${spring.data.redis.key.prefix}") private val deviceKeyPrefix: String
-) : DeviceCacheableRepositoryOutPort {
+) : DeviceRepositoryOutPort {
     override fun getById(id: String): Mono<Device> =
         reactiveRedisTemplate
             .opsForValue()

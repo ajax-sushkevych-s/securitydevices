@@ -1,7 +1,7 @@
 package com.sushkevych.securitydevices.user.application.services
 
 import com.sushkevych.securitydevices.core.application.exception.NotFoundException
-import com.sushkevych.securitydevices.core.infrastructure.annotation.DeviceAuthorization
+import com.sushkevych.securitydevices.user.application.annotation.DeviceAuthorization
 import com.sushkevych.securitydevices.user.application.port.UserRepositoryOutPort
 import com.sushkevych.securitydevices.user.application.port.UserOperationsInPort
 import com.sushkevych.securitydevices.user.domain.User

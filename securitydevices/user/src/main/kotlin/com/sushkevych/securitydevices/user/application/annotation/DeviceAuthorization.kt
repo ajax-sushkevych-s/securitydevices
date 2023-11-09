@@ -1,4 +1,4 @@
-package com.sushkevych.securitydevices.core.infrastructure.annotation
+package com.sushkevych.securitydevices.user.application.annotation
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
