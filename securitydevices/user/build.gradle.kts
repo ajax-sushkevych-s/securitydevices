@@ -4,3 +4,6 @@ dependencies { // feature commit // feature commit // extra fix //ffff
 } // main 4th commit
 // feature commit
 // ammend commit
+// amend commit
+// aaa
+// bb
